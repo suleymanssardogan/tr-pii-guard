@@ -18,8 +18,8 @@
 ## v0.3 — Geliştirici deneyimi & paketleme
 - [x] Temiz public API + özel pattern eklenebilen plugin arayüzü (`register_detector`)
 - [x] CLI aracı (`tr-pii-guard scan dosya.txt`)
-- [ ] PyPI'a yayınlama — hesap/token gerekiyor, henüz yapılmadı
-- [ ] README'de rozetler — repo/paket public olmadan anlamsız, yayınlama sonrası eklenecek
+- [x] PyPI'a yayınlama — https://pypi.org/project/tr-pii-guard/0.1.0/
+- [x] README'de kurulum rozeti
 
 ## v0.4 — LLM pipeline entegrasyonu (asıl değer önermesi)
 - [ ] OpenAI/Anthropic çağrısını sarmalayan örnek middleware (prompt'u redakte et, cevabı geri eşle)

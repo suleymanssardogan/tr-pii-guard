@@ -2,8 +2,9 @@
 name = "tr-pii-guard"
 version = "0.1.0"
 description = "Turkish PII detection and redaction for LLM pipelines"
+readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = "MIT"
 
 [project.optional-dependencies]
 ner = ["transformers>=4.30", "torch>=2.0"]

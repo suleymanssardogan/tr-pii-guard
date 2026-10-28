@@ -1,5 +1,7 @@
 # tr-pii-guard
 
+[![PyPI](https://img.shields.io/pypi/v/tr-pii-guard.svg)](https://pypi.org/project/tr-pii-guard/)
+
 Türkçe metinlerdeki kişisel verileri (TC kimlik no, IBAN, telefon, e-posta, isim, adres) LLM API çağrısından önce tespit edip maskeleyen açık kaynak Python kütüphanesi.
 
 KVKK/GDPR uyumu için, kullanıcı verisini OpenAI/Claude/Gemini gibi servislere göndermeden önce bir güvenlik katmanı sağlar.
@@ -11,7 +13,7 @@ Erken geliştirme aşamasında.
 ## Kurulum
 
 ```bash
-pip install -e .
+pip install tr-pii-guard
 ```
 
 ## Kullanım
