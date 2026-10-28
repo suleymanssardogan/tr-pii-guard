@@ -135,6 +135,27 @@ from tr_pii_guard import register_detector
 register_detector("CALISAN_ID", lambda text: list(re.finditer(r"EMP-\d{5}", text)))
 ```
 
+## Diğer seçeneklerle karşılaştırma
+
+En yakın muadil [wardcat](https://pypi.org/project/wardcat/) — dürüst bir karşılaştırma:
+
+| Özellik | tr-pii-guard | wardcat |
+|---|---|---|
+| TC no/IBAN checksum doğrulama | ✅ | ✅ |
+| Çoklu ülke desteği | ❌ (bilerek — hedef Türk kullanıcı) | ✅ (TR, US, UK, ES, FR, NL, PL) |
+| Secrets tespiti (API key, PEM vb.) | ❌ | ✅ |
+| Aksiyon sayısı | 2 (redact, hash) | 6 (warn/hash/redact/mask/tokenize/surrogate) |
+| MCP server | ✅ | ✅ |
+| Streaming yanıtta bölünen placeholder desteği | ✅ | Belirtilmemiş; 500KB üstü girdide hata veriyor |
+| Kurulumsuz canlı demo | ✅ | ❌ |
+| Yayınlanmış precision/recall sayıları | ✅ ([BENCHMARK.md](BENCHMARK.md)) | Benchmark var ama sayfada sayı yok |
+
+(Microsoft Presidio da genel amaçlı bir alternatif ama TC no için hazır bir recognizer'ı yok —
+elle eklemen gerekiyor.)
+
+Kapsamda geride olduğumuz yerler var — amacımız her alanda rekabet etmek değil, Türk kullanıcı
+için dar ama şeffaf/test edilmiş bir seçenek olmak.
+
 ## Bilinen sınırlamalar
 
 - **Yanlış pozitif tercih edilir:** Rastgele bir 11 haneli sayı TC no checksum'ını
