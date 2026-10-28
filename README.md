@@ -11,6 +11,8 @@ eden açık kaynak Python kütüphanesi. İki kullanım alanı:
 - **KVKK veri ihlali etki özeti:** Bir sızma dökümünü tarayıp, bildirim kararı öncesi hızlı,
   açıklanabilir bir risk değerlendirmesi çıkar.
 
+**[Canlı demo](https://suleymanssardogan.github.io/tr-pii-guard/)** — kurulum gerekmez, tamamen tarayıcında çalışır.
+
 ## Durum
 
 Erken geliştirme aşamasında.
@@ -175,7 +177,7 @@ En yakın muadil [wardcat](https://pypi.org/project/wardcat/) — dürüst bir k
 | KVKK veri ihlali etki özeti (`breach_report`) | ✅ | ❌ |
 | MCP server | ✅ | ✅ |
 | Streaming yanıtta bölünen placeholder desteği | ✅ | Belirtilmemiş; 500KB üstü girdide hata veriyor |
-| Kurulumsuz canlı demo | ✅ | ❌ |
+| Kurulumsuz canlı demo | ✅ ([dene](https://suleymanssardogan.github.io/tr-pii-guard/)) | ❌ |
 | Yayınlanmış precision/recall sayıları | ✅ ([BENCHMARK.md](BENCHMARK.md)) | Benchmark var ama sayfada sayı yok |
 
 (Microsoft Presidio da genel amaçlı bir alternatif ama TC no için hazır bir recognizer'ı yok —
