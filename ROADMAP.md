@@ -5,10 +5,10 @@
 - [x] TC no regex + checksum doğrulama
 - [x] Telefon regex
 - [x] IBAN regex + checksum doğrulama
-- [ ] E-posta regex detector
-- [ ] `redact(text) -> (masked_text, mapping)` — tüm detector'ları birleştiren tek API
-- [ ] `restore(masked_text, mapping) -> text` — geri eşleme
-- [ ] Çakışan eşleşmeleri çözme (aynı aralığı birden fazla detector yakalarsa en güvenilir eşleşmeyi seç)
+- [x] E-posta regex detector
+- [x] `redact(text) -> (masked_text, mapping)` — tüm detector'ları birleştiren tek API
+- [x] `restore(masked_text, mapping) -> text` — geri eşleme
+- [x] Çakışan eşleşmeleri çözme (aynı aralığı birden fazla detector yakalarsa en güvenilir eşleşmeyi seç)
 
 ## v0.2 — İsim/adres tespiti (NER)
 - [ ] Mevcut açık kaynak Türkçe NER modelini entegre et (PERSON/LOCATION)

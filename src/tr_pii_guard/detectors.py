@@ -13,6 +13,8 @@ PHONE_PATTERN = re.compile(
 
 IBAN_PATTERN = re.compile(r"TR\d{2}(?:[ ]?\d{4}){5}[ ]?\d{2}\b", re.IGNORECASE)
 
+EMAIL_PATTERN = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
 
 def _is_valid_tc_no(digits: str) -> bool:
     if len(digits) != 11 or not digits.isdigit() or digits[0] == "0":
@@ -47,3 +49,8 @@ def find_phone(text: str) -> list[re.Match]:
 def find_iban(text: str) -> list[re.Match]:
     """Find valid (checksum-passing) Turkish IBAN occurrences in text."""
     return [m for m in IBAN_PATTERN.finditer(text) if _is_valid_iban(m.group())]
+
+
+def find_email(text: str) -> list[re.Match]:
+    """Find email address occurrences in text."""
+    return list(EMAIL_PATTERN.finditer(text))
