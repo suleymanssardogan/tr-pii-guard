@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections import defaultdict
 from collections.abc import Iterable, Iterator
 from typing import Callable
@@ -51,6 +52,17 @@ def _collect_matches(text: str, detectors) -> list[tuple[int, int, str, str]]:
     return selected
 
 
+def _resolve_detectors(use_ner: bool, types: list[str] | None, strict: bool):
+    detectors = _base_detectors(strict) + tuple(_extra_detectors)
+    if use_ner:
+        from .ner import find_names
+
+        detectors = detectors + (("ISIM", find_names),)
+    if types is not None:
+        detectors = tuple(d for d in detectors if d[0] in types)
+    return detectors
+
+
 def redact(
     text: str,
     use_ner: bool = False,
@@ -70,13 +82,7 @@ def redact(
     strict=False skips TC no/IBAN checksum validation, catching more
     candidates at the cost of more false positives.
     """
-    detectors = _base_detectors(strict) + tuple(_extra_detectors)
-    if use_ner:
-        from .ner import find_names
-
-        detectors = detectors + (("ISIM", find_names),)
-    if types is not None:
-        detectors = tuple(d for d in detectors if d[0] in types)
+    detectors = _resolve_detectors(use_ner, types, strict)
 
     mapping: dict[str, str] = {}
     counters: dict[str, int] = defaultdict(int)
@@ -99,6 +105,34 @@ def restore(masked_text: str, mapping: dict[str, str]) -> str:
     for placeholder, original in mapping.items():
         result = result.replace(placeholder, original)
     return result
+
+
+def hash_pii(
+    text: str,
+    salt: str = "",
+    use_ner: bool = False,
+    types: list[str] | None = None,
+    strict: bool = True,
+) -> str:
+    """Irreversibly pseudonymize PII in `text` with a salted SHA-256 hash
+    instead of a restorable placeholder.
+
+    Unlike redact()/restore(), the original value can never be recovered --
+    use this for analytics/logging where you want the same PII value to
+    always hash to the same token (useful for joining records) without
+    ever being able to read the original back.
+    """
+    detectors = _resolve_detectors(use_ner, types, strict)
+
+    pieces = []
+    cursor = 0
+    for start, end, label, value in _collect_matches(text, detectors):
+        digest = hashlib.sha256((salt + value).encode("utf-8")).hexdigest()[:12]
+        pieces.append(text[cursor:start])
+        pieces.append(f"[{label}_{digest}]")
+        cursor = end
+    pieces.append(text[cursor:])
+    return "".join(pieces)
 
 
 def summary(mapping: dict[str, str]) -> dict[str, int]:

@@ -74,6 +74,19 @@ reply = protect(call_openai, "TC no 10000000146 ile siparişimi sorgula.")
 fonksiyon olabilir (OpenAI, Claude, yerel bir model, ne olursa). Aynı `use_ner`/`types`/`strict`
 argümanlarını `redact()`'teki gibi kabul eder.
 
+### Geri dönüşümsüz pseudonimleştirme (hash)
+
+```python
+from tr_pii_guard import hash_pii
+
+hash_pii("TC no 10000000146.", salt="projene-özel-bir-tuz")
+# -> "TC no [TC_NO_265c9160683d]."
+```
+
+`redact()`/`restore()` tersinirdir (orijinal değeri geri çıkarabilirsin); `hash_pii` tersinmez —
+aynı değer + aynı salt her zaman aynı hash'i üretir (kayıtları eşlemek için kullanışlı), ama
+orijinal değer bir daha asla okunamaz. Analytics/log gibi orijinali gerektirmeyen senaryolar için.
+
 ### Streaming LLM yanıtları
 
 ```python
