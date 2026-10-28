@@ -6,9 +6,12 @@ TC_NO_PATTERN = re.compile(r"(?<!\d)\d{11}(?!\d)")
 
 # shortcut: fixed area-code range [2-5]xx, no real operator/area-code table;
 # widen if a valid number gets missed in practice.
+# The "0" trunk prefix is one atomic optional group (with its own optional
+# parens/separator) so a bare 10-digit number can't leak a leading space
+# or stray "(" into the match when there's no "0" to anchor it.
 PHONE_PATTERN = re.compile(
-    r"(?<!\d)(?:\+90[ .-]?|0090[ .-]?)?0?[ .-]?\(?[2-5]\d{2}\)?"
-    r"[ .-]?\d{3}[ .-]?\d{2}[ .-]?\d{2}(?!\d)"
+    r"(?<!\d)(?:\+90[ .-]?|0090[ .-]?)?(?:\(?0\)?[ .-]?)?"
+    r"\(?[2-5]\d{2}\)?[ .-]?\d{3}[ .-]?\d{2}[ .-]?\d{2}(?!\d)"
 )
 
 IBAN_PATTERN = re.compile(r"TR\d{2}(?:[ ]?\d{4}){5}[ ]?\d{2}\b", re.IGNORECASE)

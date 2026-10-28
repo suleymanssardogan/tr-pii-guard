@@ -26,6 +26,19 @@ def test_find_phone_variants():
         assert find_phone(s), f"should match: {s}"
 
 
+def test_find_phone_parens_around_leading_zero_fully_consumed():
+    # (0532)1234567 - the "(" must not leak into the surrounding text
+    text = "arayın: (0532)1234567 lütfen"
+    matches = find_phone(text)
+    assert [m.group() for m in matches] == ["(0532)1234567"]
+
+
+def test_find_phone_bare_number_does_not_eat_preceding_space():
+    text = "numarası da 5321234567 diyor"
+    matches = find_phone(text)
+    assert [m.group() for m in matches] == ["5321234567"]
+
+
 def test_find_iban_valid():
     text = f"IBAN: {VALID_IBAN}"
     matches = find_iban(text)
