@@ -32,9 +32,6 @@
 - [x] Repo'yu public yap — https://github.com/suleymanssardogan/tr-pii-guard
 - [ ] İlk gerçek kullanıcı/issue toplama — repo public olup paket duyurulduktan sonra organik
 
-## Stretch (kapsam dışı tutulabilir)
-- [ ] Semantic cache / LLM maliyet raporu modülü
-
 ---
 
-**Öncelik mantığı:** v0.1–v0.3 bir demo/hiring-ready sürüm için zorunlu. v0.4–v0.5 projeyi "gerçek kullanılan açık kaynak araç" yapan farklar. Stretch bölümü zaman kalırsa.
+**Öncelik mantığı:** v0.1–v0.3 bir demo/hiring-ready sürüm için zorunlu. v0.4–v0.5 projeyi "gerçek kullanılan açık kaynak araç" yapan farklar.
