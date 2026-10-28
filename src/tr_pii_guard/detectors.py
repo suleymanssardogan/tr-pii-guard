@@ -36,9 +36,17 @@ def _is_valid_iban(iban: str) -> bool:
     return int(numeric) % 97 == 1
 
 
-def find_tc_no(text: str) -> list[re.Match]:
-    """Find valid (checksum-passing) TC kimlik no occurrences in text."""
-    return [m for m in TC_NO_PATTERN.finditer(text) if _is_valid_tc_no(m.group())]
+def find_tc_no(text: str, validate: bool = True) -> list[re.Match]:
+    """Find TC kimlik no occurrences in text.
+
+    validate=True (default) keeps only checksum-passing matches, cutting
+    false positives. validate=False keeps every 11-digit candidate, trading
+    precision for recall.
+    """
+    matches = TC_NO_PATTERN.finditer(text)
+    if validate:
+        return [m for m in matches if _is_valid_tc_no(m.group())]
+    return list(matches)
 
 
 def find_phone(text: str) -> list[re.Match]:
@@ -46,9 +54,16 @@ def find_phone(text: str) -> list[re.Match]:
     return list(PHONE_PATTERN.finditer(text))
 
 
-def find_iban(text: str) -> list[re.Match]:
-    """Find valid (checksum-passing) Turkish IBAN occurrences in text."""
-    return [m for m in IBAN_PATTERN.finditer(text) if _is_valid_iban(m.group())]
+def find_iban(text: str, validate: bool = True) -> list[re.Match]:
+    """Find Turkish IBAN occurrences in text.
+
+    validate=True (default) keeps only checksum-passing matches; validate=False
+    keeps every format-matching candidate.
+    """
+    matches = IBAN_PATTERN.finditer(text)
+    if validate:
+        return [m for m in matches if _is_valid_iban(m.group())]
+    return list(matches)
 
 
 def find_email(text: str) -> list[re.Match]:

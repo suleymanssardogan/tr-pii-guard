@@ -5,12 +5,13 @@ from typing import Callable
 
 from .detectors import find_email, find_iban, find_phone, find_tc_no
 
-_BASE_DETECTORS = (
-    ("TC_NO", find_tc_no),
-    ("IBAN", find_iban),
-    ("TELEFON", find_phone),
-    ("EPOSTA", find_email),
-)
+def _base_detectors(strict: bool):
+    return (
+        ("TC_NO", lambda t: find_tc_no(t, validate=strict)),
+        ("IBAN", lambda t: find_iban(t, validate=strict)),
+        ("TELEFON", find_phone),
+        ("EPOSTA", find_email),
+    )
 
 _extra_detectors: list[tuple[str, Callable]] = []
 
@@ -45,19 +46,32 @@ def _collect_matches(text: str, detectors) -> list[tuple[int, int, str, str]]:
     return selected
 
 
-def redact(text: str, use_ner: bool = False) -> tuple[str, dict[str, str]]:
+def redact(
+    text: str,
+    use_ner: bool = False,
+    types: list[str] | None = None,
+    strict: bool = True,
+) -> tuple[str, dict[str, str]]:
     """Mask Turkish PII in `text`. Returns (masked_text, mapping) where
     mapping maps each placeholder back to the original value.
 
     use_ner=True also masks person/location names via an optional Turkish
     NER model (pip install tr-pii-guard[ner]); off by default so the base
     package stays dependency-light.
+
+    types restricts detection to a subset of labels, e.g. types=["TC_NO", "IBAN"];
+    None (default) runs every registered detector.
+
+    strict=False skips TC no/IBAN checksum validation, catching more
+    candidates at the cost of more false positives.
     """
-    detectors = _BASE_DETECTORS + tuple(_extra_detectors)
+    detectors = _base_detectors(strict) + tuple(_extra_detectors)
     if use_ner:
         from .ner import find_names
 
         detectors = detectors + (("ISIM", find_names),)
+    if types is not None:
+        detectors = tuple(d for d in detectors if d[0] in types)
 
     mapping: dict[str, str] = {}
     counters: dict[str, int] = defaultdict(int)

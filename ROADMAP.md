@@ -22,9 +22,9 @@
 - [x] README'de kurulum rozeti
 
 ## v0.4 — LLM pipeline entegrasyonu (asıl değer önermesi)
-- [ ] OpenAI/Anthropic çağrısını sarmalayan örnek middleware (prompt'u redakte et, cevabı geri eşle)
-- [ ] Redakte edilecek PII tiplerini seçebilme (config)
-- [ ] Ayarlanabilir hassasiyet (false positive/negative dengesi)
+- [x] Herhangi bir LLM çağrısını sarmalayan `protect(llm_call, prompt)` middleware (SDK bağımlılığı yok, metin-içi/metin-dışı herhangi bir fonksiyonla çalışır)
+- [x] Redakte edilecek PII tiplerini seçebilme (`redact(text, types=["TC_NO", "IBAN"])`)
+- [x] Ayarlanabilir hassasiyet (`redact(text, strict=False)` — checksum doğrulamasını atlayıp daha fazla aday yakalar)
 
 ## v0.5 — Açık kaynak hijyeni & topluluk
 - [ ] CI (GitHub Actions: lint + pytest)

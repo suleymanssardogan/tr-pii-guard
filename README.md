@@ -49,6 +49,31 @@ Ekstra kurulu değilken `use_ner=True` çağrılırsa açık bir hata mesajıyla
 tr-pii-guard scan dosya.txt
 ```
 
+### LLM çağrısını koruma altına alma
+
+```python
+from tr_pii_guard import protect
+
+def call_openai(prompt: str) -> str:
+    return openai_client.responses.create(model="gpt-4o-mini", input=prompt).output_text
+
+reply = protect(call_openai, "TC no 10000000146 ile siparişimi sorgula.")
+```
+
+`protect` hiçbir LLM SDK'sını import etmez — `llm_call` metin alıp metin döndüren herhangi bir
+fonksiyon olabilir (OpenAI, Claude, yerel bir model, ne olursa). Aynı `use_ner`/`types`/`strict`
+argümanlarını `redact()`'teki gibi kabul eder.
+
+### Kapsamı/hassasiyeti ayarlama
+
+```python
+# Sadece TC no ve IBAN'ı maskele
+redact(text, types=["TC_NO", "IBAN"])
+
+# Checksum doğrulamasını atla, daha fazla aday yakala (daha çok yanlış pozitif riskiyle)
+redact(text, strict=False)
+```
+
 ### Özel detector ekleme
 
 ```python

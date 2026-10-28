@@ -35,3 +35,19 @@ def test_redact_leaves_clean_text_untouched():
     masked, mapping = redact(text)
     assert masked == text
     assert mapping == {}
+
+
+def test_redact_types_filter_restricts_detection():
+    text = f"TC no {VALID_TC_NO}, telefon 0532 123 45 67."
+    masked, mapping = redact(text, types=["TC_NO"])
+    assert VALID_TC_NO not in masked
+    assert "0532 123 45 67" in masked
+    assert list(mapping.keys()) == ["[TC_NO_1]"]
+
+
+def test_redact_strict_false_catches_bad_checksum():
+    text = "Rastgele sayı 12345678901 burada."
+    masked_strict, _ = redact(text)
+    masked_loose, _ = redact(text, strict=False)
+    assert "12345678901" in masked_strict  # bad checksum, ignored by default
+    assert "12345678901" not in masked_loose  # strict=False catches it anyway
