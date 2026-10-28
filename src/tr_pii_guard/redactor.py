@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Iterable, Iterator
 from typing import Callable
 
 from .detectors import find_email, find_iban, find_phone, find_tc_no
@@ -98,3 +99,35 @@ def restore(masked_text: str, mapping: dict[str, str]) -> str:
     for placeholder, original in mapping.items():
         result = result.replace(placeholder, original)
     return result
+
+
+def restore_stream(chunks: Iterable[str], mapping: dict[str, str]) -> Iterator[str]:
+    """Like `restore`, but for a stream of text chunks (e.g. an LLM streaming
+    response) where a placeholder like "[TC_NO_1]" can land split across two
+    or more chunks.
+
+    Buffers only as many characters as the longest placeholder needs: it
+    holds back any trailing text that could still be the start of a not-yet-
+    complete placeholder, and flushes everything else immediately.
+    """
+    if not mapping:
+        yield from chunks
+        return
+
+    keys = list(mapping)
+    max_len = max(len(k) for k in keys)
+    buffer = ""
+    for chunk in chunks:
+        buffer += chunk
+        hold = 0
+        for length in range(min(max_len, len(buffer)), 0, -1):
+            tail = buffer[-length:]
+            if any(key.startswith(tail) for key in keys):
+                hold = length
+                break
+        safe_len = len(buffer) - hold
+        if safe_len > 0:
+            yield restore(buffer[:safe_len], mapping)
+            buffer = buffer[safe_len:]
+    if buffer:
+        yield restore(buffer, mapping)

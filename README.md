@@ -65,6 +65,24 @@ reply = protect(call_openai, "TC no 10000000146 ile siparişimi sorgula.")
 fonksiyon olabilir (OpenAI, Claude, yerel bir model, ne olursa). Aynı `use_ner`/`types`/`strict`
 argümanlarını `redact()`'teki gibi kabul eder.
 
+### Streaming LLM yanıtları
+
+```python
+from tr_pii_guard import protect_stream
+
+def call_openai_stream(prompt: str):
+    for event in openai_client.responses.create(model="gpt-4o-mini", input=prompt, stream=True):
+        if event.type == "response.output_text.delta":
+            yield event.delta
+
+for piece in protect_stream(call_openai_stream, "TC no 10000000146 ile siparişimi sorgula."):
+    print(piece, end="", flush=True)
+```
+
+`llm_call` bir metin parçaları (chunk) iterable'ı döndürmeli. `[TC_NO_1]` gibi bir placeholder iki
+chunk arasına bölünse bile (`"[TC_NO"` + `"_1]"` gibi) doğru şekilde geri eşlenir — sadece
+placeholder'ın tamamlanmasını beklemek için gereken kadar buffer tutulur, gerisi hemen akar.
+
 ### Kapsamı/hassasiyeti ayarlama
 
 ```python
