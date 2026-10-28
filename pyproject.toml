@@ -1,6 +1,6 @@
 [project]
 name = "tr-pii-guard"
-version = "0.2.0"
+version = "0.2.1"
 description = "Turkish PII detection and redaction for LLM pipelines"
 readme = "README.md"
 requires-python = ">=3.9"
