@@ -31,6 +31,15 @@ original = restore(masked_text, mapping)
 Şu an tespit edilen türler: TC kimlik no, IBAN, telefon, e-posta (hepsi checksum/format
 doğrulamalı). Doğruluk ölçümü (precision/recall) için [BENCHMARK.md](BENCHMARK.md)'e bak.
 
+> ⚠️ **`mapping` ham PII değerlerini içerir.** Audit/metrik için `mapping`'i olduğu gibi loglama —
+> tam da maskelemeye çalıştığın veriyi log dosyasına yazmış olursun. Güvenle loglanabilecek,
+> sadece tip bazında sayı veren bir özet için `summary(mapping)` kullan:
+>
+> ```python
+> from tr_pii_guard import summary
+> summary(mapping)  # -> {"TC_NO": 1, "TELEFON": 1}  (ham değer yok)
+> ```
+
 ### İsim/adres tespiti (opsiyonel, NER)
 
 ```bash

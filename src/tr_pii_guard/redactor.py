@@ -101,6 +101,18 @@ def restore(masked_text: str, mapping: dict[str, str]) -> str:
     return result
 
 
+def summary(mapping: dict[str, str]) -> dict[str, int]:
+    """Count how many PII items of each type `redact()` found, from its
+    mapping. Safe for audit logs/metrics: unlike `mapping` itself, this
+    never includes the original values -- only counts per label.
+    """
+    counts: dict[str, int] = defaultdict(int)
+    for placeholder in mapping:
+        label = placeholder[1:-1].rsplit("_", 1)[0]
+        counts[label] += 1
+    return dict(counts)
+
+
 def restore_stream(chunks: Iterable[str], mapping: dict[str, str]) -> Iterator[str]:
     """Like `restore`, but for a stream of text chunks (e.g. an LLM streaming
     response) where a placeholder like "[TC_NO_1]" can land split across two

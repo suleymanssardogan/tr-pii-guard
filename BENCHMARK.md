@@ -16,6 +16,17 @@ tuzakları (PII gibi görünen ama olmayan sayılar) bilerek içeriyor.
 | Telefon  | 7  | 1  | 0  | 0.88      | 1.00   |
 | E-posta  | 3  | 0  | 0  | 1.00      | 1.00   |
 
+## Performans
+
+`benchmarks/run.py` ayrıca `redact()`'i bu makinede 3600 kez çalıştırıp ortalama süreyi ölçer:
+
+- **~0.006 ms / çağrı** (yaklaşık 8.5M karakter/saniye) — regex+checksum tabanlı tespit,
+  üretim trafiğinde sorun oluşturmayacak kadar hızlı. ([ClickHouse'un guardrail latency
+  tablosunda](https://clickhouse.com/resources/engineering/llm-guardrails) "regex/schema"
+  kategorisi "sub-millisecond" olarak sınıflandırılıyor — bizim ölçümümüz bu kategoriyle uyumlu.)
+- NER (`use_ner=True`) açıldığında gerçek bir model inference'ı çalıştığı için bu rakamlar
+  geçerli değil; o mod milisaniyeler-onlarca milisaniye mertebesinde olması beklenir.
+
 ## Not
 
 - Telefon'daki 1 yanlış pozitif bilinçli olarak test setine eklendi: `4455667788` gibi, alan

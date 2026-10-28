@@ -4,12 +4,14 @@ Usage: python3 benchmarks/run.py
 """
 
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from corpus import CASES
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+from tr_pii_guard import redact
 from tr_pii_guard.detectors import find_email, find_iban, find_phone, find_tc_no
 
 DETECTORS = {
@@ -36,12 +38,31 @@ def evaluate():
     return results
 
 
+def measure_performance(repeats: int = 200):
+    texts = [case["text"] for case in CASES]
+    total_chars = sum(len(t) for t in texts) * repeats
+
+    start = time.perf_counter()
+    for _ in range(repeats):
+        for text in texts:
+            redact(text)
+    elapsed = time.perf_counter() - start
+
+    calls = len(texts) * repeats
+    return elapsed / calls * 1000, total_chars / elapsed
+
+
 def main():
     results = evaluate()
     print(f"Corpus: {len(CASES)} hand-labeled sentences\n")
     print(f"{'Tip':<10}{'TP':>4}{'FP':>4}{'FN':>4}{'Precision':>12}{'Recall':>10}")
     for label, (tp, fp, fn, precision, recall) in results.items():
         print(f"{label:<10}{tp:>4}{fp:>4}{fn:>4}{precision:>12.2f}{recall:>10.2f}")
+
+    ms_per_call, chars_per_sec = measure_performance()
+    print("\nPerformans (regex detector'lar, NER hariç, bu makinede):")
+    print(f"  redact() başına ortalama: {ms_per_call:.4f} ms")
+    print(f"  throughput: ~{chars_per_sec:,.0f} karakter/saniye")
 
 
 if __name__ == "__main__":
