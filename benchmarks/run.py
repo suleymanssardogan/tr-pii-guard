@@ -40,19 +40,21 @@ def evaluate():
 
 def evaluate_ner():
     """Same precision/recall measurement, for the optional NER name/location
-    detector. Returns None if `transformers`/`torch` aren't installed."""
-    try:
-        from tr_pii_guard.ner import find_names
-    except ImportError:
-        return None
+    detector. Returns None if `transformers`/`torch` aren't installed --
+    ner.py itself imports fine without them, the ImportError only fires
+    lazily on the first real find_names() call, so that's what we guard."""
+    from tr_pii_guard.ner import find_names
 
     tp = fp = fn = 0
-    for case in CASES:
-        found = {m.group() for m in find_names(case["text"])}
-        expected = set(case["isim"])
-        tp += len(found & expected)
-        fp += len(found - expected)
-        fn += len(expected - found)
+    try:
+        for case in CASES:
+            found = {m.group() for m in find_names(case["text"])}
+            expected = set(case["isim"])
+            tp += len(found & expected)
+            fp += len(found - expected)
+            fn += len(expected - found)
+    except ImportError:
+        return None
     precision = tp / (tp + fp) if (tp + fp) else float("nan")
     recall = tp / (tp + fn) if (tp + fn) else float("nan")
     return tp, fp, fn, precision, recall
