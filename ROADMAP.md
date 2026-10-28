@@ -16,10 +16,10 @@
 - [ ] Küçük bir Türkçe test korpusu üzerinde precision/recall ölçümü — `transformers`/`torch` bu ortamda kurulu değil (GB'larca indirme), gerçek model doğrulaması kurulduğunda yapılmalı
 
 ## v0.3 — Geliştirici deneyimi & paketleme
-- [ ] Temiz public API + özel pattern eklenebilen plugin arayüzü
-- [ ] CLI aracı (`tr-pii-guard scan dosya.txt`)
-- [ ] PyPI'a yayınlama
-- [ ] README'de gerçek kullanım örnekleri + rozetler
+- [x] Temiz public API + özel pattern eklenebilen plugin arayüzü (`register_detector`)
+- [x] CLI aracı (`tr-pii-guard scan dosya.txt`)
+- [ ] PyPI'a yayınlama — hesap/token gerekiyor, henüz yapılmadı
+- [ ] README'de rozetler — repo/paket public olmadan anlamsız, yayınlama sonrası eklenecek
 
 ## v0.4 — LLM pipeline entegrasyonu (asıl değer önermesi)
 - [ ] OpenAI/Anthropic çağrısını sarmalayan örnek middleware (prompt'u redakte et, cevabı geri eşle)

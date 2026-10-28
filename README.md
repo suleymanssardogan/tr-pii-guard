@@ -41,6 +41,21 @@ masked_text, mapping = redact("Ahmet Yılmaz İstanbul'a gitti.", use_ner=True)
 `use_ner` varsayılan olarak kapalı — temel paket `transformers`/`torch` indirmeden çalışır.
 Ekstra kurulu değilken `use_ner=True` çağrılırsa açık bir hata mesajıyla uyarır.
 
+### Komut satırı
+
+```bash
+tr-pii-guard scan dosya.txt
+```
+
+### Özel detector ekleme
+
+```python
+import re
+from tr_pii_guard import register_detector
+
+register_detector("CALISAN_ID", lambda text: list(re.finditer(r"EMP-\d{5}", text)))
+```
+
 ## Lisans
 
 MIT

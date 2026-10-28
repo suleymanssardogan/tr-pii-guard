@@ -1,6 +1,7 @@
 """Combine all PII detectors into a single mask/unmask API."""
 
 from collections import defaultdict
+from typing import Callable
 
 from .detectors import find_email, find_iban, find_phone, find_tc_no
 
@@ -10,6 +11,17 @@ _BASE_DETECTORS = (
     ("TELEFON", find_phone),
     ("EPOSTA", find_email),
 )
+
+_extra_detectors: list[tuple[str, Callable]] = []
+
+
+def register_detector(label: str, finder) -> None:
+    """Register a custom detector used by every later `redact()` call.
+
+    `finder(text)` must return matches exposing `.start()`, `.end()`, `.group()`
+    (anything `re.finditer` returns satisfies this).
+    """
+    _extra_detectors.append((label, finder))
 
 
 def _collect_matches(text: str, detectors) -> list[tuple[int, int, str, str]]:
@@ -41,11 +53,11 @@ def redact(text: str, use_ner: bool = False) -> tuple[str, dict[str, str]]:
     NER model (pip install tr-pii-guard[ner]); off by default so the base
     package stays dependency-light.
     """
-    detectors = _BASE_DETECTORS
+    detectors = _BASE_DETECTORS + tuple(_extra_detectors)
     if use_ner:
         from .ner import find_names
 
-        detectors = _BASE_DETECTORS + (("ISIM", find_names),)
+        detectors = detectors + (("ISIM", find_names),)
 
     mapping: dict[str, str] = {}
     counters: dict[str, int] = defaultdict(int)

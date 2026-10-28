@@ -1,6 +1,6 @@
 """Turkish PII detection and redaction for LLM pipelines."""
 
-from .redactor import redact, restore
+from .redactor import redact, register_detector, restore
 
 __version__ = "0.1.0"
-__all__ = ["redact", "restore"]
+__all__ = ["redact", "restore", "register_detector"]

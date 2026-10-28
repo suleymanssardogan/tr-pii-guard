@@ -8,6 +8,9 @@ license = { text = "MIT" }
 [project.optional-dependencies]
 ner = ["transformers>=4.30", "torch>=2.0"]
 
+[project.scripts]
+tr-pii-guard = "tr_pii_guard.cli:main"
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
