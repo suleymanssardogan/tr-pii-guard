@@ -16,6 +16,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "TC kimlik numaram 12345678950, lütfen kontrol edin.",
@@ -23,6 +24,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Sipariş numarası 12345678901 ile takip edebilirsiniz.",
@@ -30,6 +32,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Fatura tutarı 98765432199 TL oldu.",
@@ -37,6 +40,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "IBAN'ım TR33 0006 1005 1978 6457 8413 26, ödeme yapabilirsiniz.",
@@ -44,6 +48,7 @@ CASES = [
         "iban": ["TR33 0006 1005 1978 6457 8413 26"],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Hesap no TR630012345678901234567890 şeklindedir.",
@@ -51,6 +56,7 @@ CASES = [
         "iban": ["TR630012345678901234567890"],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "IBAN TR33 0006 1005 1978 6457 8413 27 yanlış görünüyor.",
@@ -58,6 +64,7 @@ CASES = [
         "iban": [],  # son hane bozuk, geçerli IBAN DEĞİL
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Beni 0532 123 45 67 numarasından arayabilirsiniz.",
@@ -65,6 +72,7 @@ CASES = [
         "iban": [],
         "telefon": ["0532 123 45 67"],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "+90 212 444 55 66 müşteri hizmetleri hattı.",
@@ -72,6 +80,7 @@ CASES = [
         "iban": [],
         "telefon": ["+90 212 444 55 66"],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Acil durumda (0532)1234567 numarasını kullanın.",
@@ -79,6 +88,7 @@ CASES = [
         "iban": [],
         "telefon": ["(0532)1234567"],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Ofis telefonu: 0212-444-5566",
@@ -86,6 +96,7 @@ CASES = [
         "iban": [],
         "telefon": ["0212-444-5566"],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Numaram 5321234567, kaydedin.",
@@ -93,6 +104,7 @@ CASES = [
         "iban": [],
         "telefon": ["5321234567"],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "E-posta adresim ahmet.yilmaz@example.com, yazabilirsiniz.",
@@ -100,6 +112,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": ["ahmet.yilmaz@example.com"],
+        "isim": [],
     },
     {
         "text": "İletişim: ayse.demir+is@sirket.com.tr adresinden ulaşın.",
@@ -107,6 +120,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": ["ayse.demir+is@sirket.com.tr"],
+        "isim": [],
     },
     {
         "text": "Bugün hava çok güzel, dışarı çıkalım.",
@@ -114,6 +128,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": "Fiyat 150 TL, kargo 3 gün sürer.",
@@ -121,6 +136,7 @@ CASES = [
         "iban": [],
         "telefon": [],
         "eposta": [],
+        "isim": [],
     },
     {
         "text": (
@@ -132,6 +148,12 @@ CASES = [
         "iban": ["TR330006100519786457841326"],
         "telefon": ["(0532)1234567", "0212-444-5566"],
         "eposta": ["ahmet.yilmaz+siparis@gmail.com"],
+        # NER modeli burada "Ahmet"ı doğru buluyor, ama bilinen bir sınırlama:
+        # e-posta'nın local-part'ındaki ".yilmaz" kısmını da isim zannedip
+        # yanlış pozitif veriyor (overlap-çözümlemesi bunu redact()'te eler,
+        # ama find_names() tek başına kullanılırsa görülür -- bu yüzden
+        # burada BEKLENEN listesine eklemiyoruz, FP olarak ölçülsün).
+        "isim": ["Ahmet"],
     },
     {
         # Bilinen sınırlama: rastgele 10 haneli, telefon GİBİ görünen bir referans
@@ -141,5 +163,22 @@ CASES = [
         "iban": [],
         "telefon": [],  # gerçek telefon DEĞİL -- detector'ın yanlış pozitif verip vermediğini ölçer
         "eposta": [],
+        "isim": [],
+    },
+    {
+        "text": "Ahmet Yılmaz İstanbul'da oturuyor.",
+        "tc_no": [],
+        "iban": [],
+        "telefon": [],
+        "eposta": [],
+        "isim": ["Ahmet Yılmaz", "İstanbul"],
+    },
+    {
+        "text": "Ayşe Kaya, Ankara'dan geldi.",
+        "tc_no": [],
+        "iban": [],
+        "telefon": [],
+        "eposta": [],
+        "isim": ["Ayşe Kaya", "Ankara"],
     },
 ]

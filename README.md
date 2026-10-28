@@ -134,11 +134,13 @@ breach_report("TC no 10000000146, telefon 0532 123 45 67.")
 
 ```bash
 tr-pii-guard breach-report sizma_dokumu.txt
+tr-pii-guard breach-report sizma_klasoru/   # dizin verirsen tüm dosyaları tarar, toplar
 ```
 
-Bir veri dökümünü/leak dosyasını tarar, PII tiplerini sayar ve bilinen **tip kombinasyonlarına**
-dayalı (örn. TC no + telefon birlikte = yüksek risk) açıklanabilir bir risk seviyesi verir —
-KVKK'ya 72 saat içinde bildirim kararı öncesi hızlı bir ilk değerlendirme için.
+Bir veri dökümünü/leak dosyasını (ya da gerçek sızmalarda olduğu gibi, çok dosyalı bir klasörü)
+tarar, PII tiplerini sayar ve bilinen **tip kombinasyonlarına** dayalı (örn. TC no + telefon
+birlikte = yüksek risk) açıklanabilir bir risk seviyesi verir — KVKK'ya 72 saat içinde bildirim
+kararı öncesi hızlı bir ilk değerlendirme için. Python'dan çoklu dosya için `breach_report_many()`.
 
 **Bu bir hukuki tavsiye aracı değildir.** Sadece desteklenen genel nitelikli PII türlerine (TC no,
 IBAN, telefon, e-posta, opsiyonel isim) bakar; KVKK m.6 kapsamındaki **özel nitelikli veriyi**

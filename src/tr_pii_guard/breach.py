@@ -12,6 +12,8 @@ etnik köken gibi kategoriler anahtar kelimeyle güvenilir tespit edilemez
 
 from __future__ import annotations
 
+from collections import defaultdict
+
 from .redactor import redact, summary
 
 
@@ -60,3 +62,35 @@ def breach_report(
     counts = summary(mapping)
     risk_level, reason = _assess_risk(counts)
     return {"counts": counts, "risk_level": risk_level, "reason": reason}
+
+
+def breach_report_many(
+    texts: dict[str, str],
+    use_ner: bool = False,
+    types: list[str] | None = None,
+    strict: bool = True,
+) -> dict:
+    """Aggregate breach_report() across multiple named texts -- e.g. every
+    file in a leaked data dump directory, which is what a real breach
+    usually looks like (many files/rows, not one paragraph).
+
+    Returns {"per_source": {name: breach_report_result, ...},
+    "total_counts": {...}, "risk_level": ..., "reason": ...} where the
+    aggregate risk level is assessed from the combined counts across all
+    sources.
+    """
+    per_source = {
+        name: breach_report(text, use_ner=use_ner, types=types, strict=strict)
+        for name, text in texts.items()
+    }
+    total_counts: dict[str, int] = defaultdict(int)
+    for report in per_source.values():
+        for label, count in report["counts"].items():
+            total_counts[label] += count
+    risk_level, reason = _assess_risk(dict(total_counts))
+    return {
+        "per_source": per_source,
+        "total_counts": dict(total_counts),
+        "risk_level": risk_level,
+        "reason": reason,
+    }

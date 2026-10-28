@@ -1,4 +1,4 @@
-from tr_pii_guard import breach_report
+from tr_pii_guard import breach_report, breach_report_many
 
 VALID_TC_NO = "10000000146"
 VALID_IBAN = "TR33 0006 1005 1978 6457 8413 26"
@@ -32,3 +32,22 @@ def test_clean_text_has_no_risk():
     report = breach_report("Bugün hava çok güzel.")
     assert report["risk_level"] == "yok"
     assert report["counts"] == {}
+
+
+def test_breach_report_many_aggregates_across_files():
+    texts = {
+        "dosya1.txt": f"TC no {VALID_TC_NO}.",
+        "dosya2.txt": "E-posta ahmet@example.com, telefon 0532 123 45 67.",
+        "dosya3.txt": "Bugün hava çok güzel.",
+    }
+
+    result = breach_report_many(texts)
+
+    assert result["total_counts"] == {"TC_NO": 1, "EPOSTA": 1, "TELEFON": 1}
+    # TC no, hiçbir dosyada telefon/e-posta ile aynı dosyada değil -- ama
+    # toplamda aynı döküm içinde bulundukları için risk birlikte değerlendirilir.
+    assert result["risk_level"] == "yüksek"
+    assert set(result["per_source"]) == {"dosya1.txt", "dosya2.txt", "dosya3.txt"}
+    assert result["per_source"]["dosya1.txt"]["risk_level"] == "orta"
+    assert result["per_source"]["dosya3.txt"]["risk_level"] == "yok"
+    assert VALID_TC_NO not in str(result)

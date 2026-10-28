@@ -13,7 +13,7 @@
 ## v0.2 — İsim/adres tespiti (NER)
 - [x] Mevcut açık kaynak Türkçe NER modelini entegre et (PERSON/LOCATION) — `redact(text, use_ner=True)`
 - [x] Ağır ML bağımlılığı istemeyenler için "sadece regex" modu (`use_ner=False` varsayılan; `transformers`/`torch` yoksa açık hata mesajıyla yönlendirir)
-- [ ] Küçük bir Türkçe test korpusu üzerinde precision/recall ölçümü — `transformers`/`torch` bu ortamda kurulu değil (GB'larca indirme), gerçek model doğrulaması kurulduğunda yapılmalı
+- [x] Küçük bir Türkçe test korpusu üzerinde precision/recall ölçümü — gerçekten kuruldu ve ölçüldü: recall 1.00, precision 0.62 (bkz. BENCHMARK.md, bilinen e-posta local-part yanlış pozitifi)
 
 ## v0.3 — Geliştirici deneyimi & paketleme
 - [x] Temiz public API + özel pattern eklenebilen plugin arayüzü (`register_detector`)
@@ -31,6 +31,11 @@
 - [x] CONTRIBUTING.md
 - [x] Repo'yu public yap — https://github.com/suleymanssardogan/tr-pii-guard
 - [ ] İlk gerçek kullanıcı/issue toplama — repo public olup paket duyurulduktan sonra organik
+
+## v0.6 — KVKK veri ihlali özelliklerini genişletme
+- [x] `breach_report_many()` + `tr-pii-guard breach-report --dir` ile çoklu dosya/dizin taraması (gerçek sızma dökümleri çoğu zaman tek paragraf değil, çok dosyalıdır)
+- [ ] `--format json` çıktısı (dashboard/ticket sistemlerine bağlanabilsin)
+- [ ] CSV-farkındalığı (sütun bazlı sayım)
 
 ---
 

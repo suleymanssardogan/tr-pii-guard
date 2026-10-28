@@ -38,6 +38,26 @@ def evaluate():
     return results
 
 
+def evaluate_ner():
+    """Same precision/recall measurement, for the optional NER name/location
+    detector. Returns None if `transformers`/`torch` aren't installed."""
+    try:
+        from tr_pii_guard.ner import find_names
+    except ImportError:
+        return None
+
+    tp = fp = fn = 0
+    for case in CASES:
+        found = {m.group() for m in find_names(case["text"])}
+        expected = set(case["isim"])
+        tp += len(found & expected)
+        fp += len(found - expected)
+        fn += len(expected - found)
+    precision = tp / (tp + fp) if (tp + fp) else float("nan")
+    recall = tp / (tp + fn) if (tp + fn) else float("nan")
+    return tp, fp, fn, precision, recall
+
+
 def measure_performance(repeats: int = 200):
     texts = [case["text"] for case in CASES]
     total_chars = sum(len(t) for t in texts) * repeats
@@ -58,6 +78,13 @@ def main():
     print(f"{'Tip':<10}{'TP':>4}{'FP':>4}{'FN':>4}{'Precision':>12}{'Recall':>10}")
     for label, (tp, fp, fn, precision, recall) in results.items():
         print(f"{label:<10}{tp:>4}{fp:>4}{fn:>4}{precision:>12.2f}{recall:>10.2f}")
+
+    ner_result = evaluate_ner()
+    if ner_result is None:
+        print("\nisim (NER): transformers/torch kurulu değil, ölçülmedi.")
+    else:
+        tp, fp, fn, precision, recall = ner_result
+        print(f"{'isim (NER)':<10}{tp:>4}{fp:>4}{fn:>4}{precision:>12.2f}{recall:>10.2f}")
 
     ms_per_call, chars_per_sec = measure_performance()
     print("\nPerformans (regex detector'lar, NER hariç, bu makinede):")
