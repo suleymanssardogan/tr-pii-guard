@@ -20,10 +20,22 @@ def main(argv=None) -> int:
 
     args = parser.parse_args(argv)
 
-    with open(args.path, encoding="utf-8") as f:
-        text = f.read()
+    try:
+        with open(args.path, encoding="utf-8") as f:
+            text = f.read()
+    except OSError as exc:
+        print(f"tr-pii-guard: {exc.strerror}: {args.path}", file=sys.stderr)
+        return 1
+    except UnicodeDecodeError:
+        print(f"tr-pii-guard: {args.path} UTF-8 metin dosyası değil", file=sys.stderr)
+        return 1
 
-    masked, _ = redact(text, use_ner=args.use_ner)
+    try:
+        masked, _ = redact(text, use_ner=args.use_ner)
+    except ImportError as exc:
+        print(f"tr-pii-guard: {exc}", file=sys.stderr)
+        return 1
+
     print(masked)
     return 0
 
