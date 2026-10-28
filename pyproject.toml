@@ -1,0 +1,13 @@
+[project]
+name = "tr-pii-guard"
+version = "0.1.0"
+description = "Turkish PII detection and redaction for LLM pipelines"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
