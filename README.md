@@ -26,7 +26,20 @@ original = restore(masked_text, mapping)
 ```
 
 Şu an tespit edilen türler: TC kimlik no, IBAN, telefon, e-posta (hepsi checksum/format
-doğrulamalı). İsim/adres tespiti (NER) [ROADMAP](ROADMAP.md)'te v0.2 olarak planlı.
+doğrulamalı).
+
+### İsim/adres tespiti (opsiyonel, NER)
+
+```bash
+pip install tr-pii-guard[ner]
+```
+
+```python
+masked_text, mapping = redact("Ahmet Yılmaz İstanbul'a gitti.", use_ner=True)
+```
+
+`use_ner` varsayılan olarak kapalı — temel paket `transformers`/`torch` indirmeden çalışır.
+Ekstra kurulu değilken `use_ner=True` çağrılırsa açık bir hata mesajıyla uyarır.
 
 ## Lisans
 

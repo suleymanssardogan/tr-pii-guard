@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from .detectors import find_email, find_iban, find_phone, find_tc_no
 
-_DETECTORS = (
+_BASE_DETECTORS = (
     ("TC_NO", find_tc_no),
     ("IBAN", find_iban),
     ("TELEFON", find_phone),
@@ -12,10 +12,10 @@ _DETECTORS = (
 )
 
 
-def _collect_matches(text: str) -> list[tuple[int, int, str, str]]:
+def _collect_matches(text: str, detectors) -> list[tuple[int, int, str, str]]:
     candidates = [
         (m.start(), m.end(), label, m.group())
-        for label, finder in _DETECTORS
+        for label, finder in detectors
         for m in finder(text)
     ]
     # Longer matches win when two detectors claim overlapping spans.
@@ -33,14 +33,25 @@ def _collect_matches(text: str) -> list[tuple[int, int, str, str]]:
     return selected
 
 
-def redact(text: str) -> tuple[str, dict[str, str]]:
+def redact(text: str, use_ner: bool = False) -> tuple[str, dict[str, str]]:
     """Mask Turkish PII in `text`. Returns (masked_text, mapping) where
-    mapping maps each placeholder back to the original value."""
+    mapping maps each placeholder back to the original value.
+
+    use_ner=True also masks person/location names via an optional Turkish
+    NER model (pip install tr-pii-guard[ner]); off by default so the base
+    package stays dependency-light.
+    """
+    detectors = _BASE_DETECTORS
+    if use_ner:
+        from .ner import find_names
+
+        detectors = _BASE_DETECTORS + (("ISIM", find_names),)
+
     mapping: dict[str, str] = {}
     counters: dict[str, int] = defaultdict(int)
     pieces = []
     cursor = 0
-    for start, end, label, value in _collect_matches(text):
+    for start, end, label, value in _collect_matches(text, detectors):
         counters[label] += 1
         placeholder = f"[{label}_{counters[label]}]"
         mapping[placeholder] = value

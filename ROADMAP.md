@@ -11,9 +11,9 @@
 - [x] Çakışan eşleşmeleri çözme (aynı aralığı birden fazla detector yakalarsa en güvenilir eşleşmeyi seç)
 
 ## v0.2 — İsim/adres tespiti (NER)
-- [ ] Mevcut açık kaynak Türkçe NER modelini entegre et (PERSON/LOCATION)
-- [ ] Ağır ML bağımlılığı istemeyenler için "sadece regex" modu (`pip install tr-pii-guard[ner]` opsiyonel ekstra)
-- [ ] Küçük bir Türkçe test korpusu üzerinde precision/recall ölçümü
+- [x] Mevcut açık kaynak Türkçe NER modelini entegre et (PERSON/LOCATION) — `redact(text, use_ner=True)`
+- [x] Ağır ML bağımlılığı istemeyenler için "sadece regex" modu (`use_ner=False` varsayılan; `transformers`/`torch` yoksa açık hata mesajıyla yönlendirir)
+- [ ] Küçük bir Türkçe test korpusu üzerinde precision/recall ölçümü — `transformers`/`torch` bu ortamda kurulu değil (GB'larca indirme), gerçek model doğrulaması kurulduğunda yapılmalı
 
 ## v0.3 — Geliştirici deneyimi & paketleme
 - [ ] Temiz public API + özel pattern eklenebilen plugin arayüzü
