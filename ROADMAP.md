@@ -34,7 +34,6 @@
 
 ## Stretch (kapsam dışı tutulabilir)
 - [ ] Semantic cache / LLM maliyet raporu modülü
-- [ ] İngilizce PII desteği
 
 ---
 
