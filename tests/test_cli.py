@@ -35,3 +35,16 @@ def test_cli_scan_non_utf8_file_gives_clean_error(tmp_path, capsys):
 
     assert exit_code == 1
     assert "Traceback" not in err
+
+
+def test_cli_breach_report_prints_risk_and_disclaimer(tmp_path, capsys):
+    f = tmp_path / "leak.txt"
+    f.write_text(f"TC no {VALID_TC_NO}, telefon 0532 123 45 67.", encoding="utf-8")
+
+    exit_code = main(["breach-report", str(f)])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "yüksek" in out
+    assert VALID_TC_NO not in out
+    assert "hukuki tavsiye değildir" in out

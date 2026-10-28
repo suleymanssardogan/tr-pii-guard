@@ -116,6 +116,29 @@ Claude Code gibi bir MCP client'ın config'ine ekleyerek `redact_text`, `restore
 `hash_pii_text` araçlarını doğrudan agent'a sunar — agent kendi başına PII maskeleyebilir,
 geri eşleyebilir ya da hash'leyebilir, Python kodu yazmana gerek kalmadan.
 
+### KVKK veri ihlali etki özeti
+
+```python
+from tr_pii_guard import breach_report
+
+breach_report("TC no 10000000146, telefon 0532 123 45 67.")
+# -> {"counts": {"TC_NO": 1, "TELEFON": 1}, "risk_level": "yüksek",
+#     "reason": "TC kimlik no, başka bir iletişim/finansal/kimlik bilgisiyle..."}
+```
+
+```bash
+tr-pii-guard breach-report sizma_dokumu.txt
+```
+
+Bir veri dökümünü/leak dosyasını tarar, PII tiplerini sayar ve bilinen **tip kombinasyonlarına**
+dayalı (örn. TC no + telefon birlikte = yüksek risk) açıklanabilir bir risk seviyesi verir —
+KVKK'ya 72 saat içinde bildirim kararı öncesi hızlı bir ilk değerlendirme için.
+
+**Bu bir hukuki tavsiye aracı değildir.** Sadece desteklenen genel nitelikli PII türlerine (TC no,
+IBAN, telefon, e-posta, opsiyonel isim) bakar; KVKK m.6 kapsamındaki **özel nitelikli veriyi**
+(sağlık, din, etnik köken vb.) bilerek tespit etmez — anahtar kelime tabanlı tahmin yanlış negatif
+riski taşır, bu da gerçek hukuki sonuç doğurabilir. Bildirim kararı için hukuk/uyum ekibine danış.
+
 ### Kapsamı/hassasiyeti ayarlama
 
 ```python
@@ -145,6 +168,7 @@ En yakın muadil [wardcat](https://pypi.org/project/wardcat/) — dürüst bir k
 | Çoklu ülke desteği | ❌ (bilerek — hedef Türk kullanıcı) | ✅ (TR, US, UK, ES, FR, NL, PL) |
 | Secrets tespiti (API key, PEM vb.) | ❌ | ✅ |
 | Aksiyon sayısı | 2 (redact, hash) | 6 (warn/hash/redact/mask/tokenize/surrogate) |
+| KVKK veri ihlali etki özeti (`breach_report`) | ✅ | ❌ |
 | MCP server | ✅ | ✅ |
 | Streaming yanıtta bölünen placeholder desteği | ✅ | Belirtilmemiş; 500KB üstü girdide hata veriyor |
 | Kurulumsuz canlı demo | ✅ | ❌ |

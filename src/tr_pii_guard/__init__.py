@@ -1,5 +1,6 @@
 """Turkish PII detection and redaction for LLM pipelines."""
 
+from .breach import breach_report
 from .middleware import protect, protect_stream
 from .redactor import (
     hash_pii,
@@ -12,6 +13,7 @@ from .redactor import (
 
 __version__ = "0.4.0"
 __all__ = [
+    "breach_report",
     "hash_pii",
     "protect",
     "protect_stream",
