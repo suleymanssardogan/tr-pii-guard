@@ -105,6 +105,17 @@ for piece in protect_stream(call_openai_stream, "TC no 10000000146 ile siparişi
 chunk arasına bölünse bile (`"[TC_NO"` + `"_1]"` gibi) doğru şekilde geri eşlenir — sadece
 placeholder'ın tamamlanmasını beklemek için gereken kadar buffer tutulur, gerisi hemen akar.
 
+### MCP server (AI agent'lara doğrudan araç olarak)
+
+```bash
+pip install tr-pii-guard[mcp]
+tr-pii-guard-mcp
+```
+
+Claude Code gibi bir MCP client'ın config'ine ekleyerek `redact_text`, `restore_text`,
+`hash_pii_text` araçlarını doğrudan agent'a sunar — agent kendi başına PII maskeleyebilir,
+geri eşleyebilir ya da hash'leyebilir, Python kodu yazmana gerek kalmadan.
+
 ### Kapsamı/hassasiyeti ayarlama
 
 ```python

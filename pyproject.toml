@@ -8,9 +8,11 @@ license = "MIT"
 
 [project.optional-dependencies]
 ner = ["transformers>=4.30", "torch>=2.0"]
+mcp = ["mcp>=2.0"]
 
 [project.scripts]
 tr-pii-guard = "tr_pii_guard.cli:main"
+tr-pii-guard-mcp = "tr_pii_guard.mcp_server:main"
 
 [build-system]
 requires = ["setuptools>=61.0"]
