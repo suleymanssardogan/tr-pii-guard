@@ -1,9 +1,12 @@
 """Combine all PII detectors into a single mask/unmask API."""
 
+from __future__ import annotations
+
 from collections import defaultdict
 from typing import Callable
 
 from .detectors import find_email, find_iban, find_phone, find_tc_no
+
 
 def _base_detectors(strict: bool):
     return (
@@ -12,6 +15,7 @@ def _base_detectors(strict: bool):
         ("TELEFON", find_phone),
         ("EPOSTA", find_email),
     )
+
 
 _extra_detectors: list[tuple[str, Callable]] = []
 

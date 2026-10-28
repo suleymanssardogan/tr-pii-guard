@@ -27,10 +27,10 @@
 - [x] Ayarlanabilir hassasiyet (`redact(text, strict=False)` — checksum doğrulamasını atlayıp daha fazla aday yakalar)
 
 ## v0.5 — Açık kaynak hijyeni & topluluk
-- [ ] CI (GitHub Actions: lint + pytest)
-- [ ] CONTRIBUTING.md
-- [ ] Repo'yu public yap
-- [ ] İlk gerçek kullanıcı/issue toplama
+- [x] CI (GitHub Actions: ruff + pytest, Python 3.9/3.11/3.13 matrix)
+- [x] CONTRIBUTING.md
+- [ ] Repo'yu public yap — bilinçli olarak bekletiliyor, karar sende
+- [ ] İlk gerçek kullanıcı/issue toplama — repo public olup paket duyurulduktan sonra organik
 
 ## Stretch (kapsam dışı tutulabilir)
 - [ ] Semantic cache / LLM maliyet raporu modülü
