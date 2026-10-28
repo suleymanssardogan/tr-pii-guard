@@ -18,7 +18,7 @@
 ## v0.3 — Geliştirici deneyimi & paketleme
 - [x] Temiz public API + özel pattern eklenebilen plugin arayüzü (`register_detector`)
 - [x] CLI aracı (`tr-pii-guard scan dosya.txt`)
-- [x] PyPI'a yayınlama — https://pypi.org/project/tr-pii-guard/0.1.0/
+- [x] PyPI'a yayınlama — https://pypi.org/project/tr-pii-guard/0.2.0/ (v0.4/v0.5 ile güncel)
 - [x] README'de kurulum rozeti
 
 ## v0.4 — LLM pipeline entegrasyonu (asıl değer önermesi)
@@ -29,7 +29,7 @@
 ## v0.5 — Açık kaynak hijyeni & topluluk
 - [x] CI (GitHub Actions: ruff + pytest, Python 3.9/3.11/3.13 matrix)
 - [x] CONTRIBUTING.md
-- [ ] Repo'yu public yap — bilinçli olarak bekletiliyor, karar sende
+- [x] Repo'yu public yap — https://github.com/suleymanssardogan/tr-pii-guard
 - [ ] İlk gerçek kullanıcı/issue toplama — repo public olup paket duyurulduktan sonra organik
 
 ## Stretch (kapsam dışı tutulabilir)
