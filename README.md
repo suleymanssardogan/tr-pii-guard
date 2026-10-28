@@ -29,7 +29,7 @@ original = restore(masked_text, mapping)
 ```
 
 Şu an tespit edilen türler: TC kimlik no, IBAN, telefon, e-posta (hepsi checksum/format
-doğrulamalı).
+doğrulamalı). Doğruluk ölçümü (precision/recall) için [BENCHMARK.md](BENCHMARK.md)'e bak.
 
 ### İsim/adres tespiti (opsiyonel, NER)
 
