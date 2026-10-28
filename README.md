@@ -3,9 +3,13 @@
 [![CI](https://github.com/suleymanssardogan/tr-pii-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/suleymanssardogan/tr-pii-guard/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/tr-pii-guard.svg)](https://pypi.org/project/tr-pii-guard/)
 
-Türkçe metinlerdeki kişisel verileri (TC kimlik no, IBAN, telefon, e-posta, isim, adres) LLM API çağrısından önce tespit edip maskeleyen açık kaynak Python kütüphanesi.
+Türkçe metinlerdeki kişisel verileri (TC kimlik no, IBAN, telefon, e-posta, isim, adres) tespit
+eden açık kaynak Python kütüphanesi. İki kullanım alanı:
 
-KVKK/GDPR uyumu için, kullanıcı verisini OpenAI/Claude/Gemini gibi servislere göndermeden önce bir güvenlik katmanı sağlar.
+- **LLM güvenlik katmanı:** KVKK/GDPR uyumu için, kullanıcı verisini OpenAI/Claude/Gemini gibi
+  servislere göndermeden önce maskele/geri eşle.
+- **KVKK veri ihlali etki özeti:** Bir sızma dökümünü tarayıp, bildirim kararı öncesi hızlı,
+  açıklanabilir bir risk değerlendirmesi çıkar.
 
 ## Durum
 

@@ -1,7 +1,7 @@
 [project]
 name = "tr-pii-guard"
-version = "0.4.0"
-description = "Turkish PII detection and redaction for LLM pipelines"
+version = "0.5.0"
+description = "Turkish PII detection, redaction, and KVKK breach-impact reporting"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
