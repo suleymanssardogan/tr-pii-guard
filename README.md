@@ -84,6 +84,16 @@ from tr_pii_guard import register_detector
 register_detector("CALISAN_ID", lambda text: list(re.finditer(r"EMP-\d{5}", text)))
 ```
 
+## Bilinen sınırlamalar
+
+- **Yanlış pozitif tercih edilir:** Rastgele bir 11 haneli sayı TC no checksum'ını
+  tutarlı bir şekilde geçebilir (~%1 ihtimal) ve maskelenir. Bilinçli bir tercih —
+  bir gizlilik aracında fazla maskelemek, PII'yi kaçırmaktan daha güvenli.
+- **`+`/`00` olmadan yazılan "90" ülke kodu** (`"90 532 123 45 67"`) tek bir telefon
+  olarak tanınmaz; ama numaranın kendisi (`532 123 45 67`) yine de maskelenir —
+  dışarıda kalan sadece ülke kodu, kişisel veri değil.
+- Telefon alan kodu aralığı `[2-5]xx`'e sabit; nadir/özel numara formatları kaçabilir.
+
 ## Lisans
 
 MIT
