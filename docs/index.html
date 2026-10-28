@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tr-pii-guard — canlı demo</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #6b6b6b;
+    --border: #e0e0e0;
+    --accent: #0f6b4c;
+    --accent-bg: #e8f5ef;
+    --mono-bg: #f5f5f5;
+    --danger: #a3341f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15181c;
+      --fg: #e8e8e8;
+      --muted: #9a9a9a;
+      --border: #30343a;
+      --accent: #4fd1a5;
+      --accent-bg: #163229;
+      --mono-bg: #1d2024;
+      --danger: #e08a74;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-top: 0; margin-bottom: 24px; font-size: 0.95rem; }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .badge-row a img { display: block; }
+  .privacy-note {
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--mono-bg);
+    color: var(--fg);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.9rem;
+    resize: vertical;
+  }
+  button {
+    margin-top: 12px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  button:active { opacity: 0.85; }
+  h2 { font-size: 1.05rem; margin-top: 32px; margin-bottom: 8px; }
+  pre#output {
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: var(--mono-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.9rem;
+    min-height: 60px;
+  }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; }
+  code { background: var(--mono-bg); padding: 2px 5px; border-radius: 4px; font-size: 0.85em; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--accent); }
+  .empty-note { color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>tr-pii-guard</h1>
+  <p class="subtitle">Türkçe TC no, IBAN, telefon ve e-posta tespiti — canlı demo</p>
+
+  <div class="badge-row">
+    <a href="https://pypi.org/project/tr-pii-guard/"><img alt="PyPI" src="https://img.shields.io/pypi/v/tr-pii-guard.svg"></a>
+    <a href="https://github.com/suleymanssardogan/tr-pii-guard/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/suleymanssardogan/tr-pii-guard/actions/workflows/ci.yml/badge.svg"></a>
+  </div>
+
+  <p class="privacy-note">
+    Hiçbir veri bir sunucuya gönderilmiyor — bu sayfadaki tespit tamamen tarayıcınızda,
+    JavaScript ile çalışıyor. Yazdığın metin bu cihazdan hiç çıkmıyor.
+  </p>
+
+  <textarea id="input" placeholder="Örnek: Merhaba, TC no 10000000146, telefon 0532 123 45 67, IBAN TR33 0006 1005 1978 6457 8413 26, e-posta ahmet@example.com.">Merhaba, TC no 10000000146, telefon 0532 123 45 67, IBAN TR33 0006 1005 1978 6457 8413 26, e-posta ahmet@example.com.</textarea>
+  <br>
+  <button id="run">Maskele</button>
+
+  <h2>Maskelenmiş metin</h2>
+  <pre id="output"></pre>
+
+  <h2>Bulunan PII</h2>
+  <div id="findings"></div>
+
+  <footer>
+    Bu demo, açık kaynak <a href="https://github.com/suleymanssardogan/tr-pii-guard">tr-pii-guard</a>
+    kütüphanesinin regex+checksum mantığının JavaScript'e taşınmış hâlidir (isim/adres NER tespiti
+    hariç — o, Python paketinde opsiyonel bir ekstra). Gerçek projede
+    <code>pip install tr-pii-guard</code> kullanılır.
+  </footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const TC_NO_RE = /(?<!\d)\d{11}(?!\d)/g;
+  const PHONE_RE = /(?<!\d)(?:\+90[ .-]?|0090[ .-]?)?(?:\(?0\)?[ .-]?)?\(?[2-5]\d{2}\)?[ .-]?\d{3}[ .-]?\d{2}[ .-]?\d{2}(?!\d)/g;
+  const IBAN_RE = /TR\d{2}(?:[ ]?\d{4}){5}[ ]?\d{2}\b/gi;
+  const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+
+  // JS's % keeps the sign of its left operand (unlike Python's), so a
+  // negative intermediate (oddSum*7 - evenSum can go negative) needs
+  // normalizing into [0, 9] before comparing against a digit.
+  function mod10(n) {
+    return ((n % 10) + 10) % 10;
+  }
+
+  function isValidTcNo(digits) {
+    if (digits.length !== 11 || digits[0] === "0") return false;
+    const d = digits.split("").map(Number);
+    const oddSum = d[0] + d[2] + d[4] + d[6] + d[8];
+    const evenSum = d[1] + d[3] + d[5] + d[7];
+    const d10 = mod10(oddSum * 7 - evenSum);
+    const d11 = mod10(oddSum + evenSum + d10);
+    return d10 === d[9] && d11 === d[10];
+  }
+
+  function isValidIban(raw) {
+    const iban = raw.replace(/ /g, "").toUpperCase();
+    if (!/^TR\d{24}$/.test(iban)) return false;
+    const rearranged = iban.slice(4) + iban.slice(0, 4);
+    let numeric = "";
+    for (const ch of rearranged) numeric += parseInt(ch, 36).toString();
+    return BigInt(numeric) % 97n === 1n;
+  }
+
+  function findAll(regex, text, validate) {
+    const out = [];
+    let m;
+    const re = new RegExp(regex.source, regex.flags);
+    while ((m = re.exec(text)) !== null) {
+      if (!validate || validate(m[0])) {
+        out.push({ start: m.index, end: m.index + m[0].length, value: m[0] });
+      }
+      if (m[0].length === 0) re.lastIndex++;
+    }
+    return out;
+  }
+
+  function collectMatches(text) {
+    const byLabel = [
+      ["TC_NO", findAll(TC_NO_RE, text, isValidTcNo)],
+      ["IBAN", findAll(IBAN_RE, text, isValidIban)],
+      ["TELEFON", findAll(PHONE_RE, text, null)],
+      ["EPOSTA", findAll(EMAIL_RE, text, null)],
+    ];
+    let candidates = [];
+    for (const [label, matches] of byLabel) {
+      for (const m of matches) candidates.push({ label, ...m });
+    }
+    candidates.sort((a, b) => (b.end - b.start) - (a.end - a.start) || a.start - b.start);
+
+    const selected = [];
+    const occupied = [];
+    for (const c of candidates) {
+      const overlaps = occupied.some(([s, e]) => c.start < e && c.end > s);
+      if (overlaps) continue;
+      selected.push(c);
+      occupied.push([c.start, c.end]);
+    }
+    selected.sort((a, b) => a.start - b.start);
+    return selected;
+  }
+
+  function redact(text) {
+    const matches = collectMatches(text);
+    const counters = {};
+    let cursor = 0;
+    let masked = "";
+    const found = [];
+    for (const m of matches) {
+      counters[m.label] = (counters[m.label] || 0) + 1;
+      const placeholder = `[${m.label}_${counters[m.label]}]`;
+      masked += text.slice(cursor, m.start) + placeholder;
+      cursor = m.end;
+      found.push({ placeholder, value: m.value, label: m.label });
+    }
+    masked += text.slice(cursor);
+    return { masked, found };
+  }
+
+  function render() {
+    const text = document.getElementById("input").value;
+    const { masked, found } = redact(text);
+    document.getElementById("output").textContent = masked || "(boş)";
+
+    const container = document.getElementById("findings");
+    if (found.length === 0) {
+      container.innerHTML = '<p class="empty-note">Hiçbir PII bulunamadı.</p>';
+      return;
+    }
+    let html = "<table><tr><th>Tür</th><th>Placeholder</th><th>Değer</th></tr>";
+    for (const f of found) {
+      html += `<tr><td>${f.label}</td><td><code>${f.placeholder}</code></td><td>${f.value}</td></tr>`;
+    }
+    html += "</table>";
+    container.innerHTML = html;
+  }
+
+  document.getElementById("run").addEventListener("click", render);
+  render();
+})();
+</script>
+</body>
+</html>
