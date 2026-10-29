@@ -31,7 +31,12 @@ PHONE_PATTERN = re.compile(
 
 IBAN_PATTERN = re.compile(r"TR\d{2}(?:[ ]?\d{4}){5}[ ]?\d{2}\b", re.IGNORECASE)
 
-EMAIL_PATTERN = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+# Bounded quantifiers (RFC-ish realistic maxima), not unbounded `+`: an
+# unbounded local-part immediately before a literal "@" that may not exist
+# anywhere nearby makes every scan position redo up to O(n) backtracking,
+# which is O(n^2) overall across a long string with no "@" at all. Bounding
+# each quantifier caps the backtracking work per position to a constant.
+EMAIL_PATTERN = re.compile(r"[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,24}")
 
 # Well-known, prefix-anchored API key/token formats. Unlike free-text PII,
 # these have fixed, documented shapes, so false-positive risk stays low
@@ -57,7 +62,15 @@ API_KEY_PATTERN = re.compile(
 # PEM-encoded private key/certificate blocks (SSH, TLS, RSA, ...). The
 # backreference requires the END label to match the BEGIN label, so this
 # only fires on a real, well-formed PEM block.
-PEM_BLOCK_PATTERN = re.compile(r"-----BEGIN ([A-Z ]+)-----.*?-----END \1-----", re.DOTALL)
+# Both quantifiers are bounded (not unbounded `+`/`.*?`): a real PEM block
+# is at most a few KB, but an unbounded gap repeated across many "BEGIN"
+# occurrences with no matching "END" anywhere makes every one of them scan
+# to the end of the string before failing -- O(n) work times O(n) BEGINs is
+# O(n^2). A 16KB cap keeps this O(n) with a small constant while still
+# covering any realistic single key/cert (even an 8192-bit RSA key is ~6.5KB).
+PEM_BLOCK_PATTERN = re.compile(
+    r"-----BEGIN ([A-Z ]{1,50})-----.{0,16384}?-----END \1-----", re.DOTALL
+)
 
 
 def _is_valid_tc_no(digits: str) -> bool:

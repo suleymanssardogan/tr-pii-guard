@@ -99,6 +99,24 @@ yoğunluğuna bağlı, bu da O(n log n) veriyor. Aynı 16.000 satırlık test ar
 bitiyor (~112x hızlanma), 34MB'lık gerçek dosya ~4 saniyede tamamlanıyor.
 `tests/test_performance.py` bu regresyonu bir daha yakalayacak şekilde eklendi.
 
+**ReDoS/adversarial girdi taraması (başka bir gerçek güvenlik hatası buldu):** Bu kütüphanenin
+amacı tam olarak *rastgele kullanıcı metnini* bir LLM'e göndermeden önce taramak — yani kötü
+niyetli ya da sadece talihsiz bir girdiyle karşılaşması kaçınılmaz. Bunu fuzz-benzeri saldırgan
+girdilerle test ettik:
+
+- `find_email()`, "@" karakteri hiç içermeyen 2 milyon karakterlik bir metinde **süresiz
+  donuyordu** — `EMAIL_PATTERN`'deki sınırsız `+` niceleyicisi, gerekli ama var olmayan "@"
+  karakterini ararken her tarama pozisyonunda O(n) geri izleme yapıyordu (toplamda O(n²)).
+- `find_api_key()` (PEM blok deseni), eşleşen "END" bulunmayan 8000 tekrarlı "BEGIN" içeren bir
+  metinde aynı kategori hatayı veriyordu (8000 satır: 5.4s, girdi 2 katına çıkınca süre ~4 katı).
+
+**Düzeltme:** Her iki pattern'deki sınırsız niceleyici, gerçekçi üst sınırlarla (`{1,64}`,
+`{1,253}`, `{0,16384}` gibi — e-posta için RFC'ye yakın limitler, PEM için büyük bir RSA
+anahtarının bile kapsayacağı cömert bir üst sınır) değiştirildi. Bu, her pozisyondaki geri
+izleme maliyetini sabitleyip O(n²)'yi O(n)'ye indiriyor. Aynı saldırgan girdiler artık
+<1 saniyede bitiyor (2M karakterlik "@" içermeyen metin: 0.29s; 8000 BEGIN: 0.7s).
+`tests/test_redos.py` bu iki regresyonu bir daha yakalayacak şekilde eklendi.
+
 ## Not
 
 - Telefon'daki 3 yanlış pozitif bilinçli olarak test setine eklendi: `4455667788`,

@@ -204,6 +204,10 @@ için dar ama şeffaf/test edilmiş bir seçenek olmak.
 
 ## Bilinen sınırlamalar
 
+- **ReDoS'a karşı sertleştirildi:** Bu kütüphane rastgele kullanıcı metnini taramak için var —
+  yani kötü niyetli/talihsiz adversarial girdi kaçınılmaz. Fuzz testiyle iki gerçek yavaş-pattern
+  bulundu ve düzeltildi (sınırsız niceleyiciler gerçekçi üst sınırlarla değiştirildi); detaylar
+  [BENCHMARK.md](BENCHMARK.md)'de.
 - **Yanlış pozitif tercih edilir:** Rastgele bir 11 haneli sayı TC no checksum'ını
   tutarlı bir şekilde geçebilir (~%1 ihtimal) ve maskelenir. Bilinçli bir tercih —
   bir gizlilik aracında fazla maskelemek, PII'yi kaçırmaktan daha güvenli.
