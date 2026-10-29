@@ -86,6 +86,19 @@ göstermediği bir şey.
 - NER (`use_ner=True`) açıldığında gerçek bir model inference'ı çalıştığı için bu rakamlar
   geçerli değil; o mod milisaniyeler-onlarca milisaniye mertebesinde olması beklenir.
 
+**Büyük dosya testi (gerçek bir hata buldu, sonra düzeltildi):** Yukarıdaki sayı tek bir kısa
+cümle için geçerli, gerçekten çok-PII'li bir dosyada aynı ölçeklemenin tutacağı anlamına gelmez
+— bunu varsaymak yerine test ettik. 200.000 satırlık, satır başına TC no+telefon+e-posta içeren
+sentetik bir sızma dökümü (~34MB) ürettik: `tr-pii-guard breach-report` 2 dakikada bile
+bitmedi. Kök sebep: çakışan eşleşmeleri çözen `_collect_matches()`, her yeni adayı kabul edilmiş
+**tüm** eşleşmelerle karşılaştırıyordu — klasik O(n²). Girdi 2 katına çıkınca süre ~4 katına
+çıkıyordu (2000 satır: 0.41s, 4000: 1.59s, 8000: 6.24s, 16000: 24.6s — doğrulandı, tahmin
+edilmedi). Düzeltme: örtüşen adayları önce (metindeki konumlarına göre) **kümelere** ayırıp her
+küçük kümeyi ayrı çözüyoruz — küme boyutu belgenin toplam uzunluğuna değil, yerel PII
+yoğunluğuna bağlı, bu da O(n log n) veriyor. Aynı 16.000 satırlık test artık 0.22 saniyede
+bitiyor (~112x hızlanma), 34MB'lık gerçek dosya ~4 saniyede tamamlanıyor.
+`tests/test_performance.py` bu regresyonu bir daha yakalayacak şekilde eklendi.
+
 ## Not
 
 - Telefon'daki 3 yanlış pozitif bilinçli olarak test setine eklendi: `4455667788`,

@@ -45,22 +45,46 @@ def register_detector(label: str, finder) -> None:
     _extra_detectors.append((label, finder))
 
 
+def _resolve_cluster(cluster: list[tuple[int, int, str, str]]) -> list[tuple[int, int, str, str]]:
+    """Longer matches win when two detectors claim overlapping spans, within
+    one cluster of mutually-reachable overlapping candidates."""
+    cluster = sorted(cluster, key=lambda c: (-(c[1] - c[0]), c[0]))
+    chosen: list[tuple[int, int, str, str]] = []
+    occupied: list[tuple[int, int]] = []
+    for start, end, label, value in cluster:
+        if any(start < o_end and end > o_start for o_start, o_end in occupied):
+            continue
+        chosen.append((start, end, label, value))
+        occupied.append((start, end))
+    return chosen
+
+
 def _collect_matches(text: str, detectors) -> list[tuple[int, int, str, str]]:
     candidates = [
         (m.start(), m.end(), label, m.group())
         for label, finder in detectors
         for m in finder(text)
     ]
-    # Longer matches win when two detectors claim overlapping spans.
-    candidates.sort(key=lambda c: (-(c[1] - c[0]), c[0]))
+    candidates.sort(key=lambda c: c[0])
 
+    # Overlaps in real text are local: a match can only conflict with others
+    # whose spans physically reach it. Grouping into maximal overlap clusters
+    # first, then resolving each cluster independently, turns what used to be
+    # an O(n^2) "check every candidate against every accepted match" scan
+    # into O(n log n) -- cluster size depends on local PII density, not on
+    # total document length, which is what made scanning a large file
+    # (hundreds of thousands of matches) effectively hang before this change.
     selected: list[tuple[int, int, str, str]] = []
-    occupied: list[tuple[int, int]] = []
+    cluster: list[tuple[int, int, str, str]] = []
+    cluster_end = -1
     for start, end, label, value in candidates:
-        if any(start < o_end and end > o_start for o_start, o_end in occupied):
-            continue
-        selected.append((start, end, label, value))
-        occupied.append((start, end))
+        if cluster and start >= cluster_end:
+            selected.extend(_resolve_cluster(cluster))
+            cluster = []
+        cluster.append((start, end, label, value))
+        cluster_end = max(cluster_end, end)
+    if cluster:
+        selected.extend(_resolve_cluster(cluster))
 
     selected.sort(key=lambda c: c[0])
     return selected
