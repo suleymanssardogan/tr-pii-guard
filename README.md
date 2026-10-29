@@ -58,6 +58,14 @@ masked_text, mapping = redact("Ahmet Yılmaz İstanbul'a gitti.", use_ner=True)
 `use_ner` varsayılan olarak kapalı — temel paket `transformers`/`torch` indirmeden çalışır.
 Ekstra kurulu değilken `use_ner=True` çağrılırsa açık bir hata mesajıyla uyarır.
 
+```python
+# Daha yüksek recall istersen (daha çok yanlış pozitif riskiyle) eşiği düşür
+redact(text, use_ner=True, ner_min_score=0.5)
+```
+
+Varsayılan `ner_min_score=0.8`, düşük güvenli (genelde hatalı) tahminleri eler — gerçek
+precision/recall etkisi için [BENCHMARK.md](BENCHMARK.md)'e bak.
+
 ### Komut satırı
 
 ```bash
@@ -197,8 +205,11 @@ için dar ama şeffaf/test edilmiş bir seçenek olmak.
   dışarıda kalan sadece ülke kodu, kişisel veri değil.
 - Telefon alan kodu aralığı `[2-5]xx`'e sabit; nadir/özel numara formatları kaçabilir.
 - **NER (`use_ner=True`), nadir/yabancı/kurgusal özel isimlerde zayıflıyor** — gerçek Wikipedia
-  cümleleriyle yapılan dış doğrulamada recall 0.68'e düşüyor (günlük isimlerde ~1.00'e karşı).
-  Sebep subword tokenization kesilmesi (`"Lichtenthal"` → `"Li"` gibi). Bkz. [BENCHMARK.md](BENCHMARK.md).
+  cümleleriyle yapılan dış doğrulamada recall 0.64'e düşüyor (günlük isimlerde ~0.93-1.00'e karşı).
+  Sebep subword tokenization kesilmesi (`"Lichtenthal"` → `"Li"` gibi). `find_names()`'in
+  varsayılan `min_score=0.8` eşiği bu kırık parçaların çoğunu eliyor (precision'ı 0.60→0.72'ye
+  çıkarıyor) ama bir miktar recall'dan ödün veriyor; daha yüksek recall istersen
+  `ner_min_score` düşür. Bkz. [BENCHMARK.md](BENCHMARK.md).
 
 ## Lisans
 

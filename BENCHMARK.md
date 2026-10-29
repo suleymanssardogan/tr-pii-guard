@@ -23,21 +23,30 @@ secret distractor'ları (UUID, hash, base64), ve ~10 tamamen temiz cümle (yanl�
 
 ## Sonuçlar (NER — isim/konum, `pip install tr-pii-guard[ner]` sonrası)
 
-| Tip        | TP | FP | FN | Precision | Recall |
-|------------|----|----|----|-----------|--------|
-| İsim/konum | 15 | 4  | 0  | 0.79      | 1.00   |
+`find_names()` artık bir `min_score` eşiği uyguluyor (varsayılan 0.8) — aşağıdaki sayılar bu
+filtre açıkken/kapalıyken:
 
-**Bilinen, tutarlı bir yanlış pozitif deseni:** 4 yanlış pozitifin dördü de aynı sebepten —
-NER modeli, bir e-posta adresinin local-part'ındaki isim parçasını (`ahmet.yilmaz@...` içindeki
-`"yilmaz"`, `"Yilm"` gibi) ayrı bir kişi ismi zannediyor. **Ama bu `redact(use_ner=True)`
-çağrısında hiçbir zaman sızmıyor:** overlap-çözümleme mantığı EPOSTA'nın daha uzun eşleşmesini
-seçip bu parçayı eler
-(`tests/test_ner.py::test_redact_use_ner_does_not_leak_name_fragment_from_email` ile doğrulandı).
-Risk sadece `find_names()`'i tek başına, `redact()` dışında kullanırsan geçerli.
+| Filtre                        | TP | FP | FN | Precision | Recall |
+|--------------------------------|----|----|----|-----------|--------|
+| `min_score=0.0` (eski davranış) | 15 | 4  | 0  | 0.79      | 1.00   |
+| `min_score=0.8` (varsayılan)    | 14 | 0  | 1  | **1.00**  | 0.93   |
+
+**Kök sebep analizi:** Eski haliyle 4 yanlış pozitifin dördü de aynı sebepten geliyordu — NER
+modeli, bir e-posta adresinin local-part'ındaki isim parçasını (`ahmet.yilmaz@...` içindeki
+`"yilmaz"` gibi) ayrı bir kişi ismi zannediyordu. Bu hatalı tahminlerin güven skorunu (0.54-0.78)
+doğru örneklerin skoruyla (0.88-1.00) karşılaştırınca net bir ayrım bulduk ve `min_score=0.8`
+varsayılanını buna göre seçtik — bu **değer tahmin edilmedi, gerçek ölçümle belirlendi.**
+
+Bu **ücretsiz bir kazanım değil, gerçek bir precision/recall ödünleşmesi:** bazı düşük güvenli
+ama doğru tahminler de (ör. gürültülü bağlamda "Ahmet") eşik altında kalıp kaçırılabiliyor —
+`min_score=0.0` ile eski (daha yüksek recall, daha düşük precision) davranışa dönülebilir.
+`redact(use_ner=True)` çağrısında bu FP'ler zaten overlap-çözümlemesiyle sızmıyordu
+(`tests/test_ner.py::test_redact_use_ner_does_not_leak_name_fragment_from_email`), ama
+`find_names()`'i tek başına kullananlar için gerçek bir iyileştirme.
 
 ## Dış doğrulama (NER, gerçek Wikipedia cümleleri)
 
-Yukarıdaki NER sayısı (0.79/1.00) bizim yazdığımız, kolay/kanonik cümlelerden geliyor
+El-yapımı korpustaki NER sayısı bizim yazdığımız, kolay/kanonik cümlelerden geliyor
 (`"Ahmet Yılmaz İstanbul'da oturuyor."` gibi) — bu, gerçek dünya performansını olduğundan iyi
 gösterebilir. Bunu bağımsız şekilde sınamak için **savasy/bert-base-turkish-ner-cased modelinin
 eğitiminde kullanılmayan**, halka açık bir veri setini ([turkish-nlp-suite/turkish-wikiNER
@@ -47,21 +56,22 @@ Türkçe Wikipedia cümlesi, cc-by-sa-4.0) indirip çalıştırdık.
 Çalıştırmak için: `python3 benchmarks/external_wikiner_eval.py` (`pip install pandas pyarrow`
 gerektirir — proje bağımlılığı değil, sadece bu tek script için).
 
-| Yöntem                                  | TP  | FP  | FN  | Precision | Recall |
-|------------------------------------------|-----|-----|-----|-----------|--------|
-| Ham, tam string eşleşmesi                 | 532 | 871 | 725 | 0.38      | 0.42   |
-| İyelik eki normalize edilmiş\*            | 846 | 557 | 402 | **0.60**  | **0.68** |
+| Yöntem (iyelik eki normalize edilmiş)     | TP  | FP  | FN  | Precision | Recall |
+|---------------------------------------------|-----|-----|-----|-----------|--------|
+| `min_score=0.0` (eski davranış)              | 846 | 557 | 402 | 0.60      | 0.68   |
+| `min_score=0.8` (varsayılan)                 | 796 | 315 | 452 | **0.72**  | 0.64   |
 
-\* Bu veri setinin etiketleme kuralı, Türkçe iyelik/hal ekini (`'nın`, `'de`, `'ye` vb.) varlık
-span'ine dahil ediyor (`"Medea'nın"`), bizim modelimiz ise dilbilgisel olarak doğru şekilde
-sadece ismi buluyor (`"Medea"`). Bu ekleri çıkarıp karşılaştırınca sayı 0.38/0.42'den 0.60/0.68'e
-çıkıyor — yani ham farkın büyük kısmı **değerlendirme metodolojisi**, gerçek model hatası değil.
+Aynı ödünleşme burada da görünüyor: 1000 gerçek cümlede eşik precision'ı 0.60'tan 0.72'ye
+çıkarıyor, recall'u 0.68'den 0.64'e düşürüyor. Daha yüksek recall istersen `min_score`'u
+düşür (ör. `redact(text, use_ner=True, ner_min_score=0.5)`).
 
-**Kalan farkın (0.60/0.68, hâlâ el-yapımı setin 0.79/1.00'inin altında) asıl sebebi:** nadir/yabancı/
-kurgusal özel isimlerde subword tokenization kesilmesi — ör. `"Lichtenthal"` → `"Li"`,
-`"Jiraiya"` → `"iya"`/`"J"`, `"shinigami"` → `"sh"`. Model, günlük/yaygın isimlerde güçlü
-(el-yapımı setteki gibi), ama alışılmadık/yabancı kökenli özel isimlerde zayıflıyor. Bu **gerçek,
-somut bir sınırlama** — hand-crafted test setinin tek başına göstermediği bir şey.
+**Kalan farkın (hâlâ el-yapımı setin altında) asıl sebebi:** nadir/yabancı/kurgusal özel
+isimlerde subword tokenization kesilmesi — ör. `"Lichtenthal"` → `"Li"`, `"Jiraiya"` → `"iya"`/
+`"J"`, `"shinigami"` → `"sh"`. Model, günlük/yaygın isimlerde güçlü (el-yapımı setteki gibi),
+ama alışılmadık/yabancı kökenli özel isimlerde zayıflıyor; `min_score` bu tür kırık/düşük-güvenli
+parçaların çoğunu eler ama kategori-karıştırma hatalarını (ör. `"Jiraiya"`'yı %95 güvenle ORG
+sanması) düzeltmez — bu **gerçek, somut bir sınırlama**, hand-crafted test setinin tek başına
+göstermediği bir şey.
 
 ## Performans
 

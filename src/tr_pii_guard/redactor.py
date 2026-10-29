@@ -53,12 +53,14 @@ def _collect_matches(text: str, detectors) -> list[tuple[int, int, str, str]]:
     return selected
 
 
-def _resolve_detectors(use_ner: bool, types: list[str] | None, strict: bool):
+def _resolve_detectors(
+    use_ner: bool, types: list[str] | None, strict: bool, ner_min_score: float = 0.8
+):
     detectors = _base_detectors(strict) + tuple(_extra_detectors)
     if use_ner:
         from .ner import find_names
 
-        detectors = detectors + (("ISIM", find_names),)
+        detectors = detectors + (("ISIM", lambda t: find_names(t, min_score=ner_min_score)),)
     if types is not None:
         detectors = tuple(d for d in detectors if d[0] in types)
     return detectors
@@ -69,6 +71,7 @@ def redact(
     use_ner: bool = False,
     types: list[str] | None = None,
     strict: bool = True,
+    ner_min_score: float = 0.8,
 ) -> tuple[str, dict[str, str]]:
     """Mask Turkish PII in `text`. Returns (masked_text, mapping) where
     mapping maps each placeholder back to the original value.
@@ -82,8 +85,11 @@ def redact(
 
     strict=False skips TC no/IBAN checksum validation, catching more
     candidates at the cost of more false positives.
+
+    ner_min_score filters low-confidence NER predictions (see find_names()
+    in ner.py); only used when use_ner=True.
     """
-    detectors = _resolve_detectors(use_ner, types, strict)
+    detectors = _resolve_detectors(use_ner, types, strict, ner_min_score)
 
     mapping: dict[str, str] = {}
     counters: dict[str, int] = defaultdict(int)
@@ -114,6 +120,7 @@ def hash_pii(
     use_ner: bool = False,
     types: list[str] | None = None,
     strict: bool = True,
+    ner_min_score: float = 0.8,
 ) -> str:
     """Irreversibly pseudonymize PII in `text` with a salted SHA-256 hash
     instead of a restorable placeholder.
@@ -123,7 +130,7 @@ def hash_pii(
     always hash to the same token (useful for joining records) without
     ever being able to read the original back.
     """
-    detectors = _resolve_detectors(use_ner, types, strict)
+    detectors = _resolve_detectors(use_ner, types, strict, ner_min_score)
 
     pieces = []
     cursor = 0
