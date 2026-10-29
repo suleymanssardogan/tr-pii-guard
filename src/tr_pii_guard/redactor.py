@@ -7,16 +7,29 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator
 from typing import Callable
 
-from .detectors import find_api_key, find_email, find_iban, find_phone, find_tc_no
+from .detectors import (
+    find_api_key,
+    find_email,
+    find_iban,
+    find_phone,
+    find_plaka,
+    find_tc_no,
+    find_vergi_no,
+)
 
 
 def _base_detectors(strict: bool):
     return (
         ("TC_NO", lambda t: find_tc_no(t, validate=strict)),
         ("IBAN", lambda t: find_iban(t, validate=strict)),
+        # Listed before TELEFON: a bare 10-digit number can match both
+        # patterns, and when both claim the exact same span, the checksum-
+        # validated VERGI_NO match should win the tie (see find_vergi_no()).
+        ("VERGI_NO", lambda t: find_vergi_no(t, validate=strict)),
         ("TELEFON", find_phone),
         ("EPOSTA", find_email),
         ("API_KEY", find_api_key),
+        ("PLAKA", find_plaka),
     )
 
 

@@ -1,8 +1,23 @@
-"""Regex-based detectors for Turkish PII: TC kimlik no, phone numbers, IBAN."""
+"""Regex-based detectors for Turkish PII: TC kimlik no, phone, IBAN, Vergi No,
+license plates, email, and common API key/secret formats."""
 
 import re
 
 TC_NO_PATTERN = re.compile(r"(?<!\d)\d{11}(?!\d)")
+
+VERGI_NO_PATTERN = re.compile(r"(?<!\d)\d{10}(?!\d)")
+
+# Province 01-81, 1-3 letters (Turkish-specific Ç/Ş/İ/Ö/Ü/Ğ and Latin Q/W/X
+# excluded, per the real plate spec), digit count tied to letter count.
+# shortcut: doesn't special-case reserved series (taxi, consular, temporary);
+# false positives on random letter+digit codes in running text are possible.
+PLATE_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9])"
+    r"(?:0[1-9]|[1-7]\d|8[01])"
+    r"[ ]?(?:[A-PR-VYZ][ ]?\d{4,5}|[A-PR-VYZ]{2}[ ]?\d{3,4}|[A-PR-VYZ]{3}[ ]?\d{2,3})"
+    r"(?![A-Za-z0-9])",
+    re.IGNORECASE,
+)
 
 # shortcut: fixed area-code range [2-5]xx, no real operator/area-code table;
 # widen if a valid number gets missed in practice.
@@ -56,6 +71,21 @@ def _is_valid_tc_no(digits: str) -> bool:
     return d10 == d[9] and d11 == d[10]
 
 
+def _is_valid_vergi_no(digits: str) -> bool:
+    """Vergi Kimlik Numarası (VKN) checksum. Algorithm per python-stdnum's
+    stdnum.tr.vkn (GNU LGPL), verified against its documented test vector
+    ("4540536920" valid, "4540536921" invalid) before porting here."""
+    if len(digits) != 10 or not digits.isdigit():
+        return False
+    total = 0
+    for i, ch in enumerate(reversed(digits[:9]), 1):
+        c1 = (int(ch) + i) % 10
+        if c1:
+            c2 = (c1 * (2**i)) % 9 or 9
+            total += c2
+    return str((10 - total) % 10) == digits[9]
+
+
 def _is_valid_iban(iban: str) -> bool:
     iban = iban.replace(" ", "").upper()
     if not re.fullmatch(r"TR\d{24}", iban):
@@ -105,3 +135,22 @@ def find_api_key(text: str) -> list[re.Match]:
     Google, Slack, Stripe, npm, PyPI, Twilio, SendGrid) and PEM-encoded
     private key/certificate blocks in text."""
     return list(API_KEY_PATTERN.finditer(text)) + list(PEM_BLOCK_PATTERN.finditer(text))
+
+
+def find_vergi_no(text: str, validate: bool = True) -> list[re.Match]:
+    """Find Vergi Kimlik Numarası (Turkish tax ID, 10 digits) occurrences.
+
+    validate=True (default) keeps only checksum-passing matches. A bare
+    10-digit number can also match find_phone(); when both match the same
+    span, redact()'s overlap resolution keeps whichever detector is listed
+    first, so this is a known, documented ambiguity rather than a bug.
+    """
+    matches = VERGI_NO_PATTERN.finditer(text)
+    if validate:
+        return [m for m in matches if _is_valid_vergi_no(m.group())]
+    return list(matches)
+
+
+def find_plaka(text: str) -> list[re.Match]:
+    """Find Turkish vehicle license plate occurrences in text."""
+    return list(PLATE_PATTERN.finditer(text))

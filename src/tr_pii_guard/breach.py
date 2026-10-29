@@ -24,9 +24,11 @@ from .redactor import redact, summary
 def _assess_risk(counts: dict[str, int]) -> tuple[str, str]:
     tc_no = counts.get("TC_NO", 0)
     iban = counts.get("IBAN", 0)
+    vergi_no = counts.get("VERGI_NO", 0)
     telefon = counts.get("TELEFON", 0)
     eposta = counts.get("EPOSTA", 0)
     isim = counts.get("ISIM", 0)
+    plaka = counts.get("PLAKA", 0)
     api_key = counts.get("API_KEY", 0)
 
     if api_key:
@@ -34,7 +36,7 @@ def _assess_risk(counts: dict[str, int]) -> tuple[str, str]:
             "yüksek",
             "API anahtarı/secrets tespit edildi — hesaba/servise yetkisiz erişim riski.",
         )
-    if tc_no and (telefon or eposta or iban or isim):
+    if tc_no and (telefon or eposta or iban or isim or plaka or vergi_no):
         return (
             "yüksek",
             (
@@ -44,12 +46,14 @@ def _assess_risk(counts: dict[str, int]) -> tuple[str, str]:
         )
     if iban:
         return "yüksek", "IBAN (finansal veri) tespit edildi."
+    if vergi_no:
+        return "yüksek", "Vergi Kimlik Numarası (finansal/işletme verisi) tespit edildi."
     if tc_no:
         return "orta", "Sadece TC kimlik no tespit edildi, başka bağlam bilgisi yok."
-    if telefon or eposta or isim:
+    if telefon or eposta or isim or plaka:
         return (
             "düşük",
-            "Sadece iletişim/isim bilgisi tespit edildi, kimlik numarası veya finansal veri yok.",
+            "Sadece iletişim/isim/plaka bilgisi tespit edildi, kimlik numarası veya finansal veri yok.",
         )
     return "yok", "Taranan metinde desteklenen PII türlerinden hiçbiri bulunamadı."
 

@@ -30,11 +30,11 @@ masked_text, mapping = redact("TC no 10000000146, telefon 0532 123 45 67.")
 original = restore(masked_text, mapping)
 ```
 
-Şu an tespit edilen türler: TC kimlik no, IBAN, telefon, e-posta (hepsi checksum/format
-doğrulamalı), ve API key/secrets (OpenAI, Anthropic, AWS, GitHub, Google, Slack, Stripe, npm,
-PyPI, Twilio, SendGrid + PEM private key/sertifika blokları — bilinen, prefix'li/yapısal
-formatlar; Azure bilerek hariç, sabit bir prefix'i olmadığı için güvenli regex yazılamıyor).
-Doğruluk ölçümü (precision/recall) için [BENCHMARK.md](BENCHMARK.md)'e bak.
+Şu an tespit edilen türler: TC kimlik no, IBAN, Vergi Kimlik Numarası (VKN), telefon, e-posta,
+araç plakası (hepsi checksum/format doğrulamalı), ve API key/secrets (OpenAI, Anthropic, AWS,
+GitHub, Google, Slack, Stripe, npm, PyPI, Twilio, SendGrid + PEM private key/sertifika blokları
+— bilinen, prefix'li/yapısal formatlar; Azure bilerek hariç, sabit bir prefix'i olmadığı için
+güvenli regex yazılamıyor). Doğruluk ölçümü (precision/recall) için [BENCHMARK.md](BENCHMARK.md)'e bak.
 
 > ⚠️ **`mapping` ham PII değerlerini içerir.** Audit/metrik için `mapping`'i olduğu gibi loglama —
 > tam da maskelemeye çalıştığın veriyi log dosyasına yazmış olursun. Güvenle loglanabilecek,
@@ -180,6 +180,8 @@ En yakın muadil [wardcat](https://pypi.org/project/wardcat/) — dürüst bir k
 | Özellik | tr-pii-guard | wardcat |
 |---|---|---|
 | TC no/IBAN checksum doğrulama | ✅ | ✅ |
+| Vergi No (VKN) checksum doğrulama | ✅ | ✅ (wardcat'in listesinde "Vergi No" var) |
+| Araç plakası tespiti | ✅ | ✅ (wardcat'in listesinde "plates" var) |
 | Çoklu ülke desteği | ❌ (bilerek — hedef Türk kullanıcı) | ✅ (TR, US, UK, ES, FR, NL, PL) |
 | Secrets tespiti (API key + PEM blok) | ✅ (11 sağlayıcı + PEM) | ✅ (~12 sağlayıcı + PEM) |
 | Aksiyon sayısı | 2 (redact, hash) | 6 (warn/hash/redact/mask/tokenize/surrogate) |
@@ -204,6 +206,12 @@ için dar ama şeffaf/test edilmiş bir seçenek olmak.
   olarak tanınmaz; ama numaranın kendisi (`532 123 45 67`) yine de maskelenir —
   dışarıda kalan sadece ülke kodu, kişisel veri değil.
 - Telefon alan kodu aralığı `[2-5]xx`'e sabit; nadir/özel numara formatları kaçabilir.
+- **VERGI_NO ile TELEFON örtüşebilir:** her ikisi de 10 haneli, bazı rastgele sayılar
+  her iki formatı da sağlayabilir (TC no/IBAN'daki checksum rastlantısallığıyla aynı
+  kategori). Çakışan aralıkta `redact()` VERGI_NO'yu önceliklendirir (checksum
+  doğrulamalı olduğu için); ikisi de maskelendiği için pratik bir sorun oluşturmaz.
+- **Plaka tespiti** taksi/konsolosluk gibi özel seri kurallarını ayırmaz; il kodu+harf/rakam
+  formatına uyan rastgele kodlar (ör. ürün/parti numaraları) yanlış pozitif verebilir.
 - **NER (`use_ner=True`), nadir/yabancı/kurgusal özel isimlerde zayıflıyor** — gerçek Wikipedia
   cümleleriyle yapılan dış doğrulamada recall 0.64'e düşüyor (günlük isimlerde ~0.93-1.00'e karşı).
   Sebep subword tokenization kesilmesi (`"Lichtenthal"` → `"Li"` gibi). `find_names()`'in

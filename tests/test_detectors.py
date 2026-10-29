@@ -1,7 +1,15 @@
-from tr_pii_guard.detectors import find_api_key, find_iban, find_phone, find_tc_no
+from tr_pii_guard.detectors import (
+    find_api_key,
+    find_iban,
+    find_phone,
+    find_plaka,
+    find_tc_no,
+    find_vergi_no,
+)
 
 VALID_TC_NO = "10000000146"  # well-known checksum-valid test number, not a real person
 VALID_IBAN = "TR33 0006 1005 1978 6457 8413 26"
+VALID_VERGI_NO = "4540536920"  # python-stdnum's documented test vector, not a real business
 
 
 def test_find_tc_no_valid():
@@ -90,3 +98,25 @@ def test_find_pem_block_requires_matching_begin_end_labels():
 
 def test_find_api_key_ignores_plain_text():
     assert find_api_key("Bugün hava çok güzel, skor 3-1 oldu.") == []
+
+
+def test_find_vergi_no_valid():
+    text = f"Firma vergi no: {VALID_VERGI_NO}."
+    assert [m.group() for m in find_vergi_no(text)] == [VALID_VERGI_NO]
+
+
+def test_find_vergi_no_rejects_bad_checksum():
+    text = "Rastgele sayı 4540536921 burada."  # last digit tampered
+    assert find_vergi_no(text) == []
+
+
+def test_find_plaka_variants():
+    samples = ["34 CC 2342", "06 A 12345", "35 BK 1234", "01 TMR 123", "34AA1234"]
+    for s in samples:
+        assert find_plaka(s), f"should match: {s}"
+
+
+def test_find_plaka_rejects_invalid_province_and_excluded_letters():
+    assert find_plaka("82 A 1234") == []  # il kodu 81'i aşıyor
+    assert find_plaka("00 A 1234") == []  # il kodu 0
+    assert find_plaka("34 QW 1234") == []  # yasak harfler (Q, W)

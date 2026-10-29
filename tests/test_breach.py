@@ -2,6 +2,7 @@ from tr_pii_guard import breach_report, breach_report_many
 
 VALID_TC_NO = "10000000146"
 VALID_IBAN = "TR33 0006 1005 1978 6457 8413 26"
+VALID_VERGI_NO = "4540536920"
 
 
 def test_tc_no_with_contact_info_is_high_risk():
@@ -34,6 +35,18 @@ def test_api_key_alone_is_high_risk():
     assert report["risk_level"] == "yüksek"
     assert report["counts"] == {"API_KEY": 1}
     assert fake_key not in str(report)
+
+
+def test_vergi_no_alone_is_high_risk():
+    report = breach_report(f"Vergi no: {VALID_VERGI_NO}.")
+    assert report["risk_level"] == "yüksek"
+    assert report["counts"] == {"VERGI_NO": 1}
+
+
+def test_plaka_alone_is_low_risk():
+    report = breach_report("Araç plakası 34 CC 2342 idi.")
+    assert report["risk_level"] == "düşük"
+    assert report["counts"] == {"PLAKA": 1}
 
 
 def test_clean_text_has_no_risk():

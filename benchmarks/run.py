@@ -17,15 +17,19 @@ from tr_pii_guard.detectors import (
     find_email,
     find_iban,
     find_phone,
+    find_plaka,
     find_tc_no,
+    find_vergi_no,
 )
 
 DETECTORS = {
     "tc_no": find_tc_no,
     "iban": find_iban,
+    "vergi_no": find_vergi_no,
     "telefon": find_phone,
     "eposta": find_email,
     "api_key": find_api_key,
+    "plaka": find_plaka,
 }
 
 

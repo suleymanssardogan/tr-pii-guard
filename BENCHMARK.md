@@ -1,6 +1,6 @@
 # Doğruluk Ölçümü
 
-`benchmarks/corpus.py`'daki 70 cümlelik, elle etiketlenmiş Türkçe test setinde ölçüldü.
+`benchmarks/corpus.py`'daki 77 cümlelik, elle etiketlenmiş Türkçe test setinde ölçüldü.
 Bu **büyük, istatistiksel olarak kapsamlı bir endüstri benchmark'ı değil** — ama ilk sürümdeki
 23 cümlelik sanity-check'ten daha ciddi bir örnek: her PII tipi için birden fazla gerçek format
 (telefon için 10 farklı yazım şekli gibi), bozuk checksum'lı "sahte" PII'ler, detector'ların
@@ -17,9 +17,11 @@ secret distractor'ları (UUID, hash, base64), ve ~10 tamamen temiz cümle (yanl�
 |----------|----|----|----|-----------|--------|
 | TC no    | 9  | 0  | 0  | 1.00      | 1.00   |
 | IBAN     | 7  | 0  | 0  | 1.00      | 1.00   |
-| Telefon  | 12 | 3  | 0  | 0.80      | 1.00   |
+| Vergi No | 5  | 0  | 0  | 1.00      | 1.00   |
+| Telefon  | 13 | 3  | 0  | 0.81      | 1.00   |
 | E-posta  | 7  | 0  | 0  | 1.00      | 1.00   |
 | API key  | 6  | 0  | 0  | 1.00      | 1.00   |
+| Plaka    | 3  | 0  | 0  | 1.00      | 1.00   |
 
 ## Sonuçlar (NER — isim/konum, `pip install tr-pii-guard[ner]` sonrası)
 
@@ -90,8 +92,13 @@ göstermediği bir şey.
   `3344556677`, `2233445566` gibi, alan kodu aralığına ([2-5]xx) denk gelen rastgele 10
   haneli referans/ürün kodları telefon zannediliyor. README'deki "Bilinen sınırlamalar"
   bölümünde de belirtilmiştir.
-- TC no/IBAN'da yanlış pozitif riski var ama bu sette rastlanmadı (checksum rastlantısallığı
-  istatistiksel olarak ~%1 ihtimalli).
+- TC no/IBAN/Vergi No'da yanlış pozitif riski var ama bu sette rastlanmadı (checksum
+  rastlantısallığı TC no/IBAN'da ~%1, Vergi No'da (tek check-digit) ~%10 ihtimalli).
+- `4455667788` ve `3344556677` (telefon false-positive örnekleri) **aynı zamanda** Vergi No
+  checksum'ını da geçiyor — tesadüfen, bilinçli bir hata değil. `redact()`'te VERGI_NO
+  önceliklendiği için bu ikisi VERGI_NO olarak maskeleniyor, ama ikisi de maskelendiği için
+  sonuç aynı. Plaka tespitinde de benzer bir risk var: format tuzağına uyan rastgele
+  alfanümerik kodlar (ör. ürün kodları) yanlış pozitif verebilir.
 - API key distractor'ları (UUID, SHA256 hash, rastgele base64) hiçbirini tetiklemedi —
   prefix'li/yapısal format eşleştirmenin false-positive riskini düşük tuttuğunu doğruluyor.
 - NER sayıları `transformers`/`torch` kurulduktan sonra gerçekten ölçüldü (varsayımsal değil)
