@@ -13,10 +13,6 @@ eden açık kaynak Python kütüphanesi. İki kullanım alanı:
 
 **[Canlı demo](https://suleymanssardogan.github.io/tr-pii-guard/)** — kurulum gerekmez, tamamen tarayıcında çalışır.
 
-## Durum
-
-Erken geliştirme aşamasında.
-
 ## Kurulum
 
 ```bash

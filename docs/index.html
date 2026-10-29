@@ -138,6 +138,9 @@
   const PHONE_RE = /(?<!\d)(?:\+90[ .-]?|0090[ .-]?)?(?:\(?0\)?[ .-]?)?\(?[2-5]\d{2}\)?[ .-]?\d{3}[ .-]?\d{2}[ .-]?\d{2}(?!\d)/g;
   const IBAN_RE = /TR\d{2}(?:[ ]?\d{4}){5}[ ]?\d{2}\b/gi;
   const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+  const API_KEY_RE =
+    /(?:sk-ant-[A-Za-z0-9_-]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36,}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[0-9A-Za-z-]{10,}|sk_(?:live|test)_[0-9a-zA-Z]{24,}|npm_[A-Za-z0-9]{36}|pypi-[A-Za-z0-9_-]{50,}|AC[0-9a-fA-F]{32}|SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43})/g;
+  const PEM_BLOCK_RE = /-----BEGIN ([A-Z ]+)-----[\s\S]*?-----END \1-----/g;
 
   // JS's % keeps the sign of its left operand (unlike Python's), so a
   // negative intermediate (oddSum*7 - evenSum can go negative) needs
@@ -184,6 +187,8 @@
       ["IBAN", findAll(IBAN_RE, text, isValidIban)],
       ["TELEFON", findAll(PHONE_RE, text, null)],
       ["EPOSTA", findAll(EMAIL_RE, text, null)],
+      ["API_KEY", findAll(API_KEY_RE, text, null)],
+      ["API_KEY", findAll(PEM_BLOCK_RE, text, null)],
     ];
     let candidates = [];
     for (const [label, matches] of byLabel) {
