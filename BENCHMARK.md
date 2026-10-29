@@ -35,6 +35,34 @@ seçip bu parçayı eler
 (`tests/test_ner.py::test_redact_use_ner_does_not_leak_name_fragment_from_email` ile doğrulandı).
 Risk sadece `find_names()`'i tek başına, `redact()` dışında kullanırsan geçerli.
 
+## Dış doğrulama (NER, gerçek Wikipedia cümleleri)
+
+Yukarıdaki NER sayısı (0.79/1.00) bizim yazdığımız, kolay/kanonik cümlelerden geliyor
+(`"Ahmet Yılmaz İstanbul'da oturuyor."` gibi) — bu, gerçek dünya performansını olduğundan iyi
+gösterebilir. Bunu bağımsız şekilde sınamak için **savasy/bert-base-turkish-ner-cased modelinin
+eğitiminde kullanılmayan**, halka açık bir veri setini ([turkish-nlp-suite/turkish-wikiNER
+test split](https://huggingface.co/datasets/turkish-nlp-suite/turkish-wikiNER), 1000 gerçek
+Türkçe Wikipedia cümlesi, cc-by-sa-4.0) indirip çalıştırdık.
+
+Çalıştırmak için: `python3 benchmarks/external_wikiner_eval.py` (`pip install pandas pyarrow`
+gerektirir — proje bağımlılığı değil, sadece bu tek script için).
+
+| Yöntem                                  | TP  | FP  | FN  | Precision | Recall |
+|------------------------------------------|-----|-----|-----|-----------|--------|
+| Ham, tam string eşleşmesi                 | 532 | 871 | 725 | 0.38      | 0.42   |
+| İyelik eki normalize edilmiş\*            | 846 | 557 | 402 | **0.60**  | **0.68** |
+
+\* Bu veri setinin etiketleme kuralı, Türkçe iyelik/hal ekini (`'nın`, `'de`, `'ye` vb.) varlık
+span'ine dahil ediyor (`"Medea'nın"`), bizim modelimiz ise dilbilgisel olarak doğru şekilde
+sadece ismi buluyor (`"Medea"`). Bu ekleri çıkarıp karşılaştırınca sayı 0.38/0.42'den 0.60/0.68'e
+çıkıyor — yani ham farkın büyük kısmı **değerlendirme metodolojisi**, gerçek model hatası değil.
+
+**Kalan farkın (0.60/0.68, hâlâ el-yapımı setin 0.79/1.00'inin altında) asıl sebebi:** nadir/yabancı/
+kurgusal özel isimlerde subword tokenization kesilmesi — ör. `"Lichtenthal"` → `"Li"`,
+`"Jiraiya"` → `"iya"`/`"J"`, `"shinigami"` → `"sh"`. Model, günlük/yaygın isimlerde güçlü
+(el-yapımı setteki gibi), ama alışılmadık/yabancı kökenli özel isimlerde zayıflıyor. Bu **gerçek,
+somut bir sınırlama** — hand-crafted test setinin tek başına göstermediği bir şey.
+
 ## Performans
 
 `benchmarks/run.py` ayrıca `redact()`'i bu makinede 3600 kez çalıştırıp ortalama süreyi ölçer:

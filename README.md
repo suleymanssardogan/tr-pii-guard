@@ -196,6 +196,9 @@ için dar ama şeffaf/test edilmiş bir seçenek olmak.
   olarak tanınmaz; ama numaranın kendisi (`532 123 45 67`) yine de maskelenir —
   dışarıda kalan sadece ülke kodu, kişisel veri değil.
 - Telefon alan kodu aralığı `[2-5]xx`'e sabit; nadir/özel numara formatları kaçabilir.
+- **NER (`use_ner=True`), nadir/yabancı/kurgusal özel isimlerde zayıflıyor** — gerçek Wikipedia
+  cümleleriyle yapılan dış doğrulamada recall 0.68'e düşüyor (günlük isimlerde ~1.00'e karşı).
+  Sebep subword tokenization kesilmesi (`"Lichtenthal"` → `"Li"` gibi). Bkz. [BENCHMARK.md](BENCHMARK.md).
 
 ## Lisans
 
