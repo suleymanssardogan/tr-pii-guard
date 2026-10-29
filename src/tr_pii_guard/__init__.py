@@ -11,7 +11,7 @@ from .redactor import (
     summary,
 )
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 __all__ = [
     "breach_report",
     "breach_report_many",
