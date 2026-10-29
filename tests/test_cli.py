@@ -1,3 +1,5 @@
+import json
+
 from tr_pii_guard.cli import main
 
 VALID_TC_NO = "10000000146"
@@ -59,7 +61,7 @@ def test_cli_breach_report_scans_directory(tmp_path, capsys):
     out = capsys.readouterr().out
 
     assert exit_code == 0
-    assert "3 dosya tarandı" in out
+    assert "3 kaynak tarandı" in out
     assert "yüksek" in out  # TC no + telefon aynı dökümde birlikte
     assert VALID_TC_NO not in out
 
@@ -70,3 +72,45 @@ def test_cli_breach_report_empty_dir_gives_clean_error(tmp_path, capsys):
 
     assert exit_code == 1
     assert "Traceback" not in err
+
+
+def test_cli_breach_report_json_format(tmp_path, capsys):
+    f = tmp_path / "leak.txt"
+    f.write_text(f"TC no {VALID_TC_NO}.", encoding="utf-8")
+
+    exit_code = main(["breach-report", str(f), "--format", "json"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    payload = json.loads(out)
+    assert payload["risk_level"] == "orta"
+    assert payload["total_counts"] == {"TC_NO": 1}
+    assert VALID_TC_NO not in out
+
+
+def test_cli_breach_report_csv_reads_by_column(tmp_path, capsys):
+    f = tmp_path / "musteriler.csv"
+    f.write_text(
+        f"ad,tc_no\nAhmet,{VALID_TC_NO}\nAyşe,12345678950\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(["breach-report", str(f)])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "TC_NO: 2" in out
+    assert VALID_TC_NO not in out
+
+
+def test_cli_breach_report_csv_per_column_breakdown_json(tmp_path, capsys):
+    f = tmp_path / "musteriler.csv"
+    f.write_text(f"ad,tc_no\nAhmet,{VALID_TC_NO}\n", encoding="utf-8")
+
+    exit_code = main(["breach-report", str(f), "--format", "json"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    payload = json.loads(out)
+    assert f"{f.name}:tc_no" in payload["per_source"]
+    assert payload["per_source"][f"{f.name}:tc_no"]["counts"] == {"TC_NO": 1}

@@ -141,13 +141,18 @@ breach_report("TC no 10000000146, telefon 0532 123 45 67.")
 
 ```bash
 tr-pii-guard breach-report sizma_dokumu.txt
-tr-pii-guard breach-report sizma_klasoru/   # dizin verirsen tüm dosyaları tarar, toplar
+tr-pii-guard breach-report sizma_klasoru/        # dizin verirsen tüm dosyaları tarar, toplar
+tr-pii-guard breach-report musteriler.csv        # .csv ise sütun sütun tarar (ör. "tc_no: 5000")
+tr-pii-guard breach-report sizma_dokumu.txt --format json   # dashboard/ticket sistemine bağla
 ```
 
-Bir veri dökümünü/leak dosyasını (ya da gerçek sızmalarda olduğu gibi, çok dosyalı bir klasörü)
-tarar, PII tiplerini sayar ve bilinen **tip kombinasyonlarına** dayalı (örn. TC no + telefon
-birlikte = yüksek risk) açıklanabilir bir risk seviyesi verir — KVKK'ya 72 saat içinde bildirim
-kararı öncesi hızlı bir ilk değerlendirme için. Python'dan çoklu dosya için `breach_report_many()`.
+Bir veri dökümünü/leak dosyasını (ya da gerçek sızmalarda olduğu gibi, çok dosyalı bir klasörü
+ya da CSV exportunu) tarar, PII tiplerini sayar ve bilinen **tip kombinasyonlarına** dayalı (örn.
+TC no + telefon birlikte = yüksek risk) açıklanabilir bir risk seviyesi verir — KVKK'ya 72 saat
+içinde bildirim kararı öncesi hızlı bir ilk değerlendirme için. `.csv` dosyaları sütun sütun
+taranır (gerçek sızmalar çoğu zaman düz metin değil, yapılandırılmış export olur) — her sütun
+ayrı bir kaynak olarak raporlanır, hangi alanın (ör. `tc_no` sütunu) PII içerdiği netleşir.
+Python'dan çoklu dosya için `breach_report_many()`.
 
 **Bu bir hukuki tavsiye aracı değildir.** Sadece desteklenen genel nitelikli PII türlerine (TC no,
 IBAN, telefon, e-posta, opsiyonel isim) bakar; KVKK m.6 kapsamındaki **özel nitelikli veriyi**
