@@ -1,6 +1,6 @@
 [project]
 name = "tr-pii-guard"
-version = "0.8.0"
+version = "0.9.0"
 description = "Turkish PII detection, redaction, and KVKK breach-impact reporting"
 readme = "README.md"
 requires-python = ">=3.9"
