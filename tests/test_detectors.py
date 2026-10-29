@@ -1,4 +1,4 @@
-from tr_pii_guard.detectors import find_iban, find_phone, find_tc_no
+from tr_pii_guard.detectors import find_api_key, find_iban, find_phone, find_tc_no
 
 VALID_TC_NO = "10000000146"  # well-known checksum-valid test number, not a real person
 VALID_IBAN = "TR33 0006 1005 1978 6457 8413 26"
@@ -48,3 +48,25 @@ def test_find_iban_valid():
 def test_find_iban_rejects_bad_checksum():
     text = "IBAN: TR33 0006 1005 1978 6457 8413 27"  # last digit tampered
     assert find_iban(text) == []
+
+
+def test_find_api_key_variants():
+    # Fake, random-looking fixtures built via concatenation (not literal
+    # secret-shaped strings in source) so scanners/push-protection don't
+    # mistake these test values for real leaked credentials.
+    samples = [
+        "sk-ant-api03-" + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",  # Anthropic
+        "sk-proj-" + "abcdefghijklmnopqrstuvwxyz1234567890",  # OpenAI (project)
+        "sk-" + "abcdefghijklmnopqrstuvwxyz1234567890",  # OpenAI (legacy)
+        "AKIA" + "IOSFODNN7EXAMPLE",  # AWS's own public documentation example key
+        "ghp_" + "abcdefghijklmnopqrstuvwxyz1234567890AB",  # GitHub
+        "AIza" + "SyDaGmWKa4JsXZHjGw7ISLn3namBGewQeXX",  # Google
+        "xoxb-" + "1234567890-abcdefghijklmnop",  # Slack
+        "sk_test_" + "abcdefghijklmnopqrstuvwxyz123456",  # Stripe
+    ]
+    for s in samples:
+        assert find_api_key(s), f"should match: {s}"
+
+
+def test_find_api_key_ignores_plain_text():
+    assert find_api_key("Bugün hava çok güzel, skor 3-1 oldu.") == []

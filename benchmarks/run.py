@@ -12,13 +12,20 @@ from corpus import CASES
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from tr_pii_guard import redact
-from tr_pii_guard.detectors import find_email, find_iban, find_phone, find_tc_no
+from tr_pii_guard.detectors import (
+    find_api_key,
+    find_email,
+    find_iban,
+    find_phone,
+    find_tc_no,
+)
 
 DETECTORS = {
     "tc_no": find_tc_no,
     "iban": find_iban,
     "telefon": find_phone,
     "eposta": find_email,
+    "api_key": find_api_key,
 }
 
 

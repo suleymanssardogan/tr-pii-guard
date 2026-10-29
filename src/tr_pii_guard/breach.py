@@ -8,6 +8,10 @@ ekibine danışılmalıdır.
 Kurallar KVKK m.6 (özel nitelikli veri) kapsamına GİRMEZ -- sağlık, din,
 etnik köken gibi kategoriler anahtar kelimeyle güvenilir tespit edilemez
 (yanlış negatif riski çok yüksek), bu yüzden bilerek kapsam dışı tutuldu.
+
+API_KEY tespiti KVKK'nın kişisel veri tanımına girmez, ama gerçek bir veri
+ihlali değerlendirmesinde (hesaba/servise yetkisiz erişim riski) alakalı
+olduğu için dahil edildi.
 """
 
 from __future__ import annotations
@@ -23,7 +27,13 @@ def _assess_risk(counts: dict[str, int]) -> tuple[str, str]:
     telefon = counts.get("TELEFON", 0)
     eposta = counts.get("EPOSTA", 0)
     isim = counts.get("ISIM", 0)
+    api_key = counts.get("API_KEY", 0)
 
+    if api_key:
+        return (
+            "yüksek",
+            "API anahtarı/secrets tespit edildi — hesaba/servise yetkisiz erişim riski.",
+        )
     if tc_no and (telefon or eposta or iban or isim):
         return (
             "yüksek",

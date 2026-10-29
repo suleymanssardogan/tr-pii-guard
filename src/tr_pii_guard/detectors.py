@@ -18,6 +18,22 @@ IBAN_PATTERN = re.compile(r"TR\d{2}(?:[ ]?\d{4}){5}[ ]?\d{2}\b", re.IGNORECASE)
 
 EMAIL_PATTERN = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
+# Well-known, prefix-anchored API key/token formats (OpenAI, Anthropic, AWS,
+# GitHub, Google, Slack, Stripe). Unlike free-text PII, these have fixed,
+# documented shapes, so false-positive risk stays low without a checksum.
+API_KEY_PATTERN = re.compile(
+    r"(?:"
+    r"sk-ant-[A-Za-z0-9_-]{20,}"  # Anthropic
+    r"|sk-proj-[A-Za-z0-9_-]{20,}"  # OpenAI (project key)
+    r"|sk-[A-Za-z0-9]{20,}"  # OpenAI (legacy)
+    r"|AKIA[0-9A-Z]{16}"  # AWS access key id
+    r"|gh[pousr]_[A-Za-z0-9]{36,}"  # GitHub (personal/oauth/user/server/refresh)
+    r"|AIza[0-9A-Za-z_-]{35}"  # Google API key
+    r"|xox[baprs]-[0-9A-Za-z-]{10,}"  # Slack token
+    r"|sk_(?:live|test)_[0-9a-zA-Z]{24,}"  # Stripe
+    r")"
+)
+
 
 def _is_valid_tc_no(digits: str) -> bool:
     if len(digits) != 11 or not digits.isdigit() or digits[0] == "0":
@@ -72,3 +88,9 @@ def find_iban(text: str, validate: bool = True) -> list[re.Match]:
 def find_email(text: str) -> list[re.Match]:
     """Find email address occurrences in text."""
     return list(EMAIL_PATTERN.finditer(text))
+
+
+def find_api_key(text: str) -> list[re.Match]:
+    """Find common API key/token formats (OpenAI, Anthropic, AWS, GitHub,
+    Google, Slack, Stripe) in text."""
+    return list(API_KEY_PATTERN.finditer(text))

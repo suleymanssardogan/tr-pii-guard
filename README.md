@@ -35,7 +35,8 @@ original = restore(masked_text, mapping)
 ```
 
 Şu an tespit edilen türler: TC kimlik no, IBAN, telefon, e-posta (hepsi checksum/format
-doğrulamalı). Doğruluk ölçümü (precision/recall) için [BENCHMARK.md](BENCHMARK.md)'e bak.
+doğrulamalı), ve API key/secrets (OpenAI, Anthropic, AWS, GitHub, Google, Slack, Stripe — bilinen
+prefix'li formatlar). Doğruluk ölçümü (precision/recall) için [BENCHMARK.md](BENCHMARK.md)'e bak.
 
 > ⚠️ **`mapping` ham PII değerlerini içerir.** Audit/metrik için `mapping`'i olduğu gibi loglama —
 > tam da maskelemeye çalıştığın veriyi log dosyasına yazmış olursun. Güvenle loglanabilecek,
@@ -174,7 +175,7 @@ En yakın muadil [wardcat](https://pypi.org/project/wardcat/) — dürüst bir k
 |---|---|---|
 | TC no/IBAN checksum doğrulama | ✅ | ✅ |
 | Çoklu ülke desteği | ❌ (bilerek — hedef Türk kullanıcı) | ✅ (TR, US, UK, ES, FR, NL, PL) |
-| Secrets tespiti (API key, PEM vb.) | ❌ | ✅ |
+| Secrets tespiti (API key) | ✅ (OpenAI, Anthropic, AWS, GitHub, Google, Slack, Stripe) | ✅ (ayrıca PEM blok, ~12 sağlayıcı) |
 | Aksiyon sayısı | 2 (redact, hash) | 6 (warn/hash/redact/mask/tokenize/surrogate) |
 | KVKK veri ihlali etki özeti (`breach_report`) | ✅ | ❌ |
 | MCP server | ✅ | ✅ |

@@ -1,6 +1,6 @@
 # Doğruluk Ölçümü
 
-`benchmarks/corpus.py`'daki 20 cümlelik, elle etiketlenmiş küçük Türkçe test setinde ölçüldü.
+`benchmarks/corpus.py`'daki 22 cümlelik, elle etiketlenmiş küçük Türkçe test setinde ölçüldü.
 Bu **büyük, istatistiksel olarak kapsamlı bir benchmark değil** — dürüst, küçük bir örnek:
 gerçek formatları, bozuk checksum'lı "sahte" PII'leri, ve detector'ların kaçırabileceği bilinen
 tuzakları (PII gibi görünen ama olmayan sayılar) bilerek içeriyor.
@@ -15,6 +15,7 @@ tuzakları (PII gibi görünen ama olmayan sayılar) bilerek içeriyor.
 | IBAN     | 3  | 0  | 0  | 1.00      | 1.00   |
 | Telefon  | 7  | 1  | 0  | 0.88      | 1.00   |
 | E-posta  | 3  | 0  | 0  | 1.00      | 1.00   |
+| API key  | 2  | 0  | 0  | 1.00      | 1.00   |
 
 ## Sonuçlar (NER — isim/konum, `pip install tr-pii-guard[ner]` sonrası)
 

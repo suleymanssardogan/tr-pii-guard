@@ -28,6 +28,14 @@ def test_only_contact_info_is_low_risk():
     assert report["risk_level"] == "düşük"
 
 
+def test_api_key_alone_is_high_risk():
+    fake_key = "sk-proj-" + "abcdefghijklmnopqrstuvwxyz1234567890"
+    report = breach_report(f"Config: {fake_key}")
+    assert report["risk_level"] == "yüksek"
+    assert report["counts"] == {"API_KEY": 1}
+    assert fake_key not in str(report)
+
+
 def test_clean_text_has_no_risk():
     report = breach_report("Bugün hava çok güzel.")
     assert report["risk_level"] == "yok"

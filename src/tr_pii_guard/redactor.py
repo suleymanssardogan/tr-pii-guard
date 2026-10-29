@@ -7,7 +7,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator
 from typing import Callable
 
-from .detectors import find_email, find_iban, find_phone, find_tc_no
+from .detectors import find_api_key, find_email, find_iban, find_phone, find_tc_no
 
 
 def _base_detectors(strict: bool):
@@ -16,6 +16,7 @@ def _base_detectors(strict: bool):
         ("IBAN", lambda t: find_iban(t, validate=strict)),
         ("TELEFON", find_phone),
         ("EPOSTA", find_email),
+        ("API_KEY", find_api_key),
     )
 
 

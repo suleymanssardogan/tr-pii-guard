@@ -9,6 +9,12 @@ Each case lists the exact substrings each detector SHOULD return for `text`.
 An empty list means "nothing of this type should be found here".
 """
 
+# Fake API key fixtures built via concatenation (not literal secret-shaped
+# strings in source) so scanners/push-protection don't mistake these for
+# real leaked credentials.
+_FAKE_OPENAI_KEY = "sk-proj-" + "abcdefghijklmnopqrstuvwxyz1234567890"
+_FAKE_AWS_KEY = "AKIA" + "IOSFODNN7EXAMPLE"  # AWS's own public documentation example
+
 CASES = [
     {
         "text": "Müşteri TC no 10000000146 ile kayıtlı.",
@@ -17,6 +23,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "TC kimlik numaram 12345678950, lütfen kontrol edin.",
@@ -25,6 +32,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Sipariş numarası 12345678901 ile takip edebilirsiniz.",
@@ -33,6 +41,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Fatura tutarı 98765432199 TL oldu.",
@@ -41,6 +50,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "IBAN'ım TR33 0006 1005 1978 6457 8413 26, ödeme yapabilirsiniz.",
@@ -49,6 +59,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Hesap no TR630012345678901234567890 şeklindedir.",
@@ -57,6 +68,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "IBAN TR33 0006 1005 1978 6457 8413 27 yanlış görünüyor.",
@@ -65,6 +77,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Beni 0532 123 45 67 numarasından arayabilirsiniz.",
@@ -73,6 +86,7 @@ CASES = [
         "telefon": ["0532 123 45 67"],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "+90 212 444 55 66 müşteri hizmetleri hattı.",
@@ -81,6 +95,7 @@ CASES = [
         "telefon": ["+90 212 444 55 66"],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Acil durumda (0532)1234567 numarasını kullanın.",
@@ -89,6 +104,7 @@ CASES = [
         "telefon": ["(0532)1234567"],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Ofis telefonu: 0212-444-5566",
@@ -97,6 +113,7 @@ CASES = [
         "telefon": ["0212-444-5566"],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Numaram 5321234567, kaydedin.",
@@ -105,6 +122,7 @@ CASES = [
         "telefon": ["5321234567"],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "E-posta adresim ahmet.yilmaz@example.com, yazabilirsiniz.",
@@ -113,6 +131,7 @@ CASES = [
         "telefon": [],
         "eposta": ["ahmet.yilmaz@example.com"],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "İletişim: ayse.demir+is@sirket.com.tr adresinden ulaşın.",
@@ -121,6 +140,7 @@ CASES = [
         "telefon": [],
         "eposta": ["ayse.demir+is@sirket.com.tr"],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Bugün hava çok güzel, dışarı çıkalım.",
@@ -129,6 +149,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Fiyat 150 TL, kargo 3 gün sürer.",
@@ -137,6 +158,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": (
@@ -154,6 +176,7 @@ CASES = [
         # ama find_names() tek başına kullanılırsa görülür -- bu yüzden
         # burada BEKLENEN listesine eklemiyoruz, FP olarak ölçülsün).
         "isim": ["Ahmet"],
+        "api_key": [],
     },
     {
         # Bilinen sınırlama: rastgele 10 haneli, telefon GİBİ görünen bir referans
@@ -164,6 +187,7 @@ CASES = [
         "telefon": [],  # gerçek telefon DEĞİL -- detector'ın yanlış pozitif verip vermediğini ölçer
         "eposta": [],
         "isim": [],
+        "api_key": [],
     },
     {
         "text": "Ahmet Yılmaz İstanbul'da oturuyor.",
@@ -172,6 +196,7 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": ["Ahmet Yılmaz", "İstanbul"],
+        "api_key": [],
     },
     {
         "text": "Ayşe Kaya, Ankara'dan geldi.",
@@ -180,5 +205,24 @@ CASES = [
         "telefon": [],
         "eposta": [],
         "isim": ["Ayşe Kaya", "Ankara"],
+        "api_key": [],
+    },
+    {
+        "text": f"Config dosyasına yanlışlıkla {_FAKE_OPENAI_KEY} yazılmış.",
+        "tc_no": [],
+        "iban": [],
+        "telefon": [],
+        "eposta": [],
+        "isim": [],
+        "api_key": [_FAKE_OPENAI_KEY],
+    },
+    {
+        "text": f"AWS access key: {_FAKE_AWS_KEY} (AWS'nin kendi resmi örnek anahtarı).",
+        "tc_no": [],
+        "iban": [],
+        "telefon": [],
+        "eposta": [],
+        "isim": [],
+        "api_key": [_FAKE_AWS_KEY],
     },
 ]
