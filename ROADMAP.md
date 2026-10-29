@@ -34,7 +34,7 @@
 
 ## v0.6 — KVKK veri ihlali özelliklerini genişletme
 - [x] `breach_report_many()` + `tr-pii-guard breach-report --dir` ile çoklu dosya/dizin taraması (gerçek sızma dökümleri çoğu zaman tek paragraf değil, çok dosyalıdır)
-- [x] API key/secrets tespiti (OpenAI, Anthropic, AWS, GitHub, Google, Slack, Stripe — prefix'li, iyi tanımlı formatlar; wardcat'e karşı kapanan bir boşluk)
+- [x] API key/secrets tespiti (11 sağlayıcı + PEM private key/sertifika blokları — prefix'li/yapısal, iyi tanımlı formatlar; wardcat'e karşı kapanan bir boşluk; Azure bilerek hariç)
 - [ ] `--format json` çıktısı (dashboard/ticket sistemlerine bağlanabilsin)
 - [ ] CSV-farkındalığı (sütun bazlı sayım)
 

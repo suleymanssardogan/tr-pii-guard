@@ -14,6 +14,11 @@ An empty list means "nothing of this type should be found here".
 # real leaked credentials.
 _FAKE_OPENAI_KEY = "sk-proj-" + "abcdefghijklmnopqrstuvwxyz1234567890"
 _FAKE_AWS_KEY = "AKIA" + "IOSFODNN7EXAMPLE"  # AWS's own public documentation example
+_FAKE_PEM_BLOCK = (
+    "-----BEGIN RSA PRIVATE KEY-----\n"
+    + "MIIEpAIBAAKCAQEA7" + "fakefakefakefakefakefake"
+    + "\n-----END RSA PRIVATE KEY-----"
+)
 
 CASES = [
     {
@@ -224,5 +229,14 @@ CASES = [
         "eposta": [],
         "isim": [],
         "api_key": [_FAKE_AWS_KEY],
+    },
+    {
+        "text": f"Sunucu config dosyasına sızmış: {_FAKE_PEM_BLOCK}",
+        "tc_no": [],
+        "iban": [],
+        "telefon": [],
+        "eposta": [],
+        "isim": [],
+        "api_key": [_FAKE_PEM_BLOCK],
     },
 ]

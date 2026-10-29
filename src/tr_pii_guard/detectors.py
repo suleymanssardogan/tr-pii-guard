@@ -18,9 +18,10 @@ IBAN_PATTERN = re.compile(r"TR\d{2}(?:[ ]?\d{4}){5}[ ]?\d{2}\b", re.IGNORECASE)
 
 EMAIL_PATTERN = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
-# Well-known, prefix-anchored API key/token formats (OpenAI, Anthropic, AWS,
-# GitHub, Google, Slack, Stripe). Unlike free-text PII, these have fixed,
-# documented shapes, so false-positive risk stays low without a checksum.
+# Well-known, prefix-anchored API key/token formats. Unlike free-text PII,
+# these have fixed, documented shapes, so false-positive risk stays low
+# without a checksum. Azure is deliberately excluded -- its keys have no
+# consistent prefix, so a safe pattern isn't possible.
 API_KEY_PATTERN = re.compile(
     r"(?:"
     r"sk-ant-[A-Za-z0-9_-]{20,}"  # Anthropic
@@ -31,8 +32,17 @@ API_KEY_PATTERN = re.compile(
     r"|AIza[0-9A-Za-z_-]{35}"  # Google API key
     r"|xox[baprs]-[0-9A-Za-z-]{10,}"  # Slack token
     r"|sk_(?:live|test)_[0-9a-zA-Z]{24,}"  # Stripe
+    r"|npm_[A-Za-z0-9]{36}"  # npm token
+    r"|pypi-[A-Za-z0-9_-]{50,}"  # PyPI token
+    r"|AC[0-9a-fA-F]{32}"  # Twilio account SID
+    r"|SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}"  # SendGrid
     r")"
 )
+
+# PEM-encoded private key/certificate blocks (SSH, TLS, RSA, ...). The
+# backreference requires the END label to match the BEGIN label, so this
+# only fires on a real, well-formed PEM block.
+PEM_BLOCK_PATTERN = re.compile(r"-----BEGIN ([A-Z ]+)-----.*?-----END \1-----", re.DOTALL)
 
 
 def _is_valid_tc_no(digits: str) -> bool:
@@ -92,5 +102,6 @@ def find_email(text: str) -> list[re.Match]:
 
 def find_api_key(text: str) -> list[re.Match]:
     """Find common API key/token formats (OpenAI, Anthropic, AWS, GitHub,
-    Google, Slack, Stripe) in text."""
-    return list(API_KEY_PATTERN.finditer(text))
+    Google, Slack, Stripe, npm, PyPI, Twilio, SendGrid) and PEM-encoded
+    private key/certificate blocks in text."""
+    return list(API_KEY_PATTERN.finditer(text)) + list(PEM_BLOCK_PATTERN.finditer(text))

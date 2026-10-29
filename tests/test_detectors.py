@@ -63,9 +63,29 @@ def test_find_api_key_variants():
         "AIza" + "SyDaGmWKa4JsXZHjGw7ISLn3namBGewQeXX",  # Google
         "xoxb-" + "1234567890-abcdefghijklmnop",  # Slack
         "sk_test_" + "abcdefghijklmnopqrstuvwxyz123456",  # Stripe
+        "npm_" + "abcdefghijklmnopqrstuvwxyz1234567890",  # npm
+        "pypi-" + "AgEIcHlwaS5vcmcCJGFiY2RlZmdoLTEyMzQtNTY3OC05YWJjLWRlZjAxMjM0NTY3OA",  # PyPI
+        "AC" + "0123456789abcdef0123456789abcdef",  # Twilio account SID
+        "SG." + "abcdefghijklmnopqrstuv" + "." + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOab",  # SendGrid
     ]
     for s in samples:
         assert find_api_key(s), f"should match: {s}"
+
+
+def test_find_pem_block():
+    fake_pem = (
+        "-----BEGIN RSA PRIVATE KEY-----\n"
+        + "MIIEpAIBAAKCAQEA7" + "fakefakefakefakefakefake" + "\n"
+        + "-----END RSA PRIVATE KEY-----"
+    )
+    matches = find_api_key(fake_pem)
+    assert len(matches) == 1
+    assert matches[0].group() == fake_pem
+
+
+def test_find_pem_block_requires_matching_begin_end_labels():
+    mismatched = "-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END CERTIFICATE-----"
+    assert find_api_key(mismatched) == []
 
 
 def test_find_api_key_ignores_plain_text():
