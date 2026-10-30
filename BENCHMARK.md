@@ -9,7 +9,11 @@ secret distractor'ları (UUID, hash, base64), ve ~10 tamamen temiz cümle (yanl�
 ölçmek için) bilerek içeriyor. Her checksum-geçerli TC no/IBAN gerçekten üretilip
 `_is_valid_tc_no`/`_is_valid_iban` ile doğrulandı, tahmin edilmedi.
 
-Çalıştırmak için: `python3 benchmarks/run.py`
+**Scriptler:**
+- `python3 benchmarks/run.py` — el-yapımı korpus (bu dosyadaki ana sonuçlar) + performans ölçümü
+- `python3 benchmarks/external_wikiner_eval.py` — NER'in gerçek Wikipedia cümleleriyle dış doğrulaması
+- `python3 benchmarks/external_regex_eval.py` — regex detector'ların gerçek Wikipedia cümleleriyle yanlış pozitif testi
+- `python3 -m pytest tests/ --cov=tr_pii_guard --cov-report=term-missing` — test coverage
 
 ## Sonuçlar (regex detector'lar, NER hariç)
 
@@ -74,6 +78,47 @@ ama alışılmadık/yabancı kökenli özel isimlerde zayıflıyor; `min_score` 
 parçaların çoğunu eler ama kategori-karıştırma hatalarını (ör. `"Jiraiya"`'yı %95 güvenle ORG
 sanması) düzeltmez — bu **gerçek, somut bir sınırlama**, hand-crafted test setinin tek başına
 göstermediği bir şey.
+
+## Dış doğrulama (regex detector'lar, gerçek Wikipedia cümleleri)
+
+NER'i gerçek metinle dış doğruladık ama regex detector'ları (TC no, IBAN, telefon, e-posta,
+Vergi No, plaka, API key) hiç yapmamıştık — sadece kendi yazdığımız cümlelerle test edilmişti.
+Aynı 1000 cümlelik gerçek Wikipedia veri setini bu sefer regex detector'lar için çalıştırdık.
+
+Çalıştırmak için: `python3 benchmarks/external_regex_eval.py`
+
+| Tip      | Yanlış pozitif / 1000 cümle |
+|----------|------------------------------|
+| TC no    | 0                            |
+| IBAN     | 0                            |
+| Telefon  | 0                            |
+| E-posta  | 0                            |
+| Vergi No | 0                            |
+| Plaka    | 0                            |
+| API key  | 0                            |
+
+**Dürüst bir uyarı, sayıyı abartmadan:** Bu "0" kısmen **testin kör noktasından** geliyor —
+114.959 karakterlik gerçek Wikipedia düzyazısında en uzun rakam dizisi **8 hane** (TC no/Vergi
+No tetiklemesi için 10-11 hane gerekiyor), ve "@", "TR"+rakam, "sk-"/"AKIA" gibi özel
+işaretler ansiklopedik metinde neredeyse hiç geçmiyor. Yani bu sonuç **TC no/Vergi No/IBAN/
+E-posta/API key için zayıf kanıt** (test etme fırsatı zaten yoktu) ama **telefon/plaka için
+daha anlamlı** (bu ikisi daha kısa/genel rakam-harf dizileriyle tetiklenebilir, yine de
+tetiklenmedi). Checksum-rastlantısallığı riski (TC no/IBAN/Vergi No'nun asıl yanlış pozitif
+kaynağı) zaten `benchmarks/corpus.py`'daki bilinçli distractor'larla test ediliyor — bu dış
+doğrulamanın asıl katkısı, detector'ların **sıradan düzyazıda aşırı tetiklenmediğini**
+göstermek, checksum-tuzak senaryosunu değil.
+
+## Test coverage
+
+`pytest --cov=tr_pii_guard --cov-report=term-missing` ile ölçüldü: **%90** (374 satırdan 38'i
+kapsanmıyor). CLI tarafında gerçek boşluklar bulundu ve kapatıldı (dizin içinde CSV taranması,
+iç içe alt klasör taraması, bozuk/okunamayan dosyaların dizin taramasında atlanması, boş/bozuk
+CSV hata yolları) — coverage %81'den %93'e çıktı. Kalan boşluklar bilinçli bırakıldı: ortama
+bağlı `ImportError` dalları (bu makinede `transformers` kurulu olduğu için tetiklenemiyor, ama
+ayrı bir testle zaten var olduğu doğrulanıyor), argparse'ın `required=True` yüzünden fiilen
+erişilemeyen bir fallback satırı, `if __name__ == "__main__"` standart kalıbı, ve
+`mcp_server.py`'ın ayrı bir alt süreçte (gerçek bir uçtan uca testle) çalışması — coverage
+aracı süreç sınırını göremiyor, test gerçekten çalışıyor ama rakama yansımıyor.
 
 ## Performans
 

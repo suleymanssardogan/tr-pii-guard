@@ -39,6 +39,9 @@
 - [x] `--format json` çıktısı (dashboard/ticket sistemlerine bağlanabilsin)
 - [x] CSV-farkındalığı (sütun bazlı sayım — `.csv` dosyaları sütun sütun taranır, hangi alanın PII içerdiği netleşir)
 - [x] NER güven eşiği (`find_names(min_score=0.8)`) — kanıta dayalı, bilinen yanlış pozitif desenlerini eler
+- [x] O(n²) performans hatası düzeltildi (büyük dosyada 2+ dakika → ~4 saniye) ve regresyon testi eklendi
+- [x] İki ReDoS/polinom geri izleme hatası bulundu ve düzeltildi (fuzz testiyle), regresyon testleri eklendi
+- [x] Regex detector'lar için dış doğrulama (`external_regex_eval.py`, gerçek Wikipedia metni) + test coverage ölçümü (%90, CI'da görünür)
 
 ---
 
